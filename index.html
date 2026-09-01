@@ -1,0 +1,1473 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Operação CERES — 3M Agropecuária</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --verde:#1B4D2E;--verde2:#2E7D4F;--verde3:#4CAF50;--verde-clr:#E8F5E9;
+  --ouro:#B8860B;--ouro2:#DAA520;--ouro-clr:#FFF8E1;
+  --cinza:#F4F6F4;--cinza2:#E8ECE8;--cinza3:#AAB5AA;
+  --text:#1A2A1A;--text2:#4A5E4A;--text3:#7A8E7A;
+  --branco:#FFFFFF;--borda:#D0DAD0;
+  --perigo:#C62828;--perigo-clr:#FFEBEE;
+  --azul:#1565C0;--azul-clr:#E3F2FD;
+  --font:'Segoe UI',system-ui,sans-serif;
+  --r:8px;--r2:14px;
+}
+body{font-family:var(--font);background:var(--cinza);color:var(--text);font-size:13px;min-height:100vh;display:flex}
+
+/* ── SIDEBAR ── */
+#sidebar{
+  width:220px;min-height:100vh;background:var(--verde);
+  display:flex;flex-direction:column;flex-shrink:0;position:fixed;top:0;left:0;bottom:0;z-index:100;
+}
+#sidebar-logo{padding:20px 18px 16px;border-bottom:1px solid rgba(255,255,255,.12)}
+#sidebar-logo .marca{font-size:18px;font-weight:700;color:#fff;letter-spacing:.5px}
+#sidebar-logo .sub{font-size:10px;color:rgba(255,255,255,.55);margin-top:2px;letter-spacing:.5px}
+#sidebar-user{padding:12px 16px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:10px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--ouro2);display:flex;align-items:center;justify-content:center;font-weight:700;font-size:12px;color:#fff;flex-shrink:0}
+.avatar-info .nome{font-size:12px;font-weight:600;color:#fff}
+.avatar-info .cargo{font-size:10px;color:rgba(255,255,255,.5)}
+#nav{flex:1;padding:10px 0;overflow-y:auto}
+.nav-section{font-size:9.5px;font-weight:600;color:rgba(255,255,255,.35);letter-spacing:.8px;padding:14px 18px 5px;text-transform:uppercase}
+.nav-item{display:flex;align-items:center;gap:10px;padding:9px 18px;cursor:pointer;color:rgba(255,255,255,.7);font-size:12.5px;font-weight:500;transition:all .15s;border-left:3px solid transparent}
+.nav-item:hover{background:rgba(255,255,255,.08);color:#fff}
+.nav-item.ativo{background:rgba(255,255,255,.13);color:#fff;border-left-color:var(--ouro2)}
+.nav-item .ico{font-size:16px;width:20px;text-align:center;opacity:.8}
+#sidebar-bottom{padding:14px 16px;border-top:1px solid rgba(255,255,255,.1)}
+.btn-sair{width:100%;padding:8px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:var(--r);color:rgba(255,255,255,.7);cursor:pointer;font-size:12px}
+.btn-sair:hover{background:rgba(255,255,255,.15)}
+
+/* ── CONTEÚDO ── */
+#main{margin-left:220px;flex:1;display:flex;flex-direction:column;min-height:100vh}
+#topbar{background:var(--branco);border-bottom:1px solid var(--borda);padding:14px 24px;display:flex;align-items:center;justify-content:space-between}
+.topbar-titulo{font-size:16px;font-weight:600;color:var(--text)}
+.topbar-sub{font-size:11px;color:var(--text3);margin-top:1px}
+.topbar-acoes{display:flex;gap:8px;align-items:center}
+#conteudo{padding:20px 24px;flex:1}
+
+/* ── TELAS ── */
+.tela{display:none}
+.tela.ativa{display:block}
+
+/* ── CARDS MÉTRICA ── */
+.metricas{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:12px;margin-bottom:20px}
+.metrica{background:var(--branco);border-radius:var(--r2);padding:16px;border:1px solid var(--borda)}
+.metrica .lbl{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px}
+.metrica .val{font-size:22px;font-weight:700;color:var(--text)}
+.metrica .sub{font-size:10px;color:var(--text3);margin-top:3px}
+.metrica.verde .val{color:var(--verde2)}
+.metrica.ouro .val{color:var(--ouro)}
+.metrica.perigo .val{color:var(--perigo)}
+
+/* ── TABELA ── */
+.card{background:var(--branco);border-radius:var(--r2);border:1px solid var(--borda);overflow:hidden;margin-bottom:16px}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--borda);display:flex;align-items:center;justify-content:space-between;gap:8px}
+.card-header h3{font-size:13px;font-weight:600;color:var(--text)}
+.tbl-wrap{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:9px 12px;text-align:left;font-weight:600;color:var(--text2);background:var(--cinza);border-bottom:1px solid var(--borda);white-space:nowrap}
+td{padding:9px 12px;border-bottom:1px solid var(--cinza2);color:var(--text);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--cinza)}
+.sem-dados{padding:32px;text-align:center;color:var(--text3)}
+
+/* ── BADGES ── */
+.badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
+.badge-verde{background:var(--verde-clr);color:var(--verde2)}
+.badge-ouro{background:var(--ouro-clr);color:var(--ouro)}
+.badge-perigo{background:var(--perigo-clr);color:var(--perigo)}
+.badge-azul{background:var(--azul-clr);color:var(--azul)}
+.badge-cinza{background:var(--cinza2);color:var(--text2)}
+
+/* ── BOTÕES ── */
+.btn{padding:8px 16px;border-radius:var(--r);font-size:12.5px;font-weight:600;cursor:pointer;border:1px solid transparent;transition:all .15s;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn-primario{background:var(--verde2);color:#fff;border-color:var(--verde2)}
+.btn-primario:hover{background:var(--verde)}
+.btn-ouro{background:var(--ouro2);color:#fff;border-color:var(--ouro2)}
+.btn-ouro:hover{background:var(--ouro)}
+.btn-ghost{background:transparent;color:var(--text2);border-color:var(--borda)}
+.btn-ghost:hover{background:var(--cinza)}
+.btn-perigo{background:var(--perigo-clr);color:var(--perigo);border-color:var(--perigo)}
+.btn-perigo:hover{background:var(--perigo);color:#fff}
+.btn-sm{padding:5px 10px;font-size:11px}
+.btn-icone{background:transparent;border:none;cursor:pointer;color:var(--text3);padding:4px;border-radius:4px;display:inline-flex;align-items:center}
+.btn-icone:hover{color:var(--text);background:var(--cinza)}
+
+/* ── FORMULÁRIO ── */
+.form-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+.form-group{display:flex;flex-direction:column;gap:4px}
+.form-group.full{grid-column:1/-1}
+label{font-size:11px;font-weight:600;color:var(--text2)}
+input,select,textarea{padding:8px 10px;border:1px solid var(--borda);border-radius:var(--r);font-size:12.5px;font-family:var(--font);color:var(--text);background:var(--branco);width:100%;transition:border-color .15s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--verde2)}
+textarea{resize:vertical;min-height:70px}
+.form-acoes{display:flex;gap:8px;padding-top:8px}
+
+/* ── MODAL ── */
+#modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:500;display:none;align-items:center;justify-content:center;padding:20px}
+#modal-overlay.aberto{display:flex}
+.modal{background:var(--branco);border-radius:var(--r2);width:100%;max-width:640px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.modal-header{padding:18px 20px;border-bottom:1px solid var(--borda);display:flex;align-items:center;justify-content:space-between}
+.modal-header h3{font-size:14px;font-weight:700;color:var(--text)}
+.modal-body{padding:20px}
+.modal-footer{padding:14px 20px;border-top:1px solid var(--borda);display:flex;gap:8px;justify-content:flex-end}
+
+/* ── UPLOAD ── */
+.upload-area{border:2px dashed var(--borda);border-radius:var(--r2);padding:28px;text-align:center;cursor:pointer;transition:all .15s;background:var(--cinza)}
+.upload-area:hover,.upload-area.dragover{border-color:var(--verde2);background:var(--verde-clr)}
+.upload-area .ico-upload{font-size:28px;margin-bottom:8px;color:var(--text3)}
+.upload-area p{font-size:12px;color:var(--text2)}
+.upload-area small{font-size:10.5px;color:var(--text3)}
+
+/* ── DETALHE TERMO ── */
+.termo-detalhe{background:var(--verde-clr);border:1px solid var(--borda);border-radius:var(--r2);padding:16px;margin-bottom:16px}
+.termo-detalhe-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:12px}
+.td-item .td-lbl{font-size:10px;color:var(--text3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+.td-item .td-val{font-size:14px;font-weight:700;color:var(--text)}
+.td-item .td-val.ouro{color:var(--ouro)}
+.td-item .td-val.verde{color:var(--verde2)}
+
+/* ── BAIAS ── */
+.baia-pill{display:inline-flex;align-items:center;gap:6px;background:var(--cinza2);border-radius:20px;padding:4px 12px;font-size:11px;font-weight:600;color:var(--text2)}
+.baia-pills{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+
+/* ── LOADING ── */
+#loading{position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(255,255,255,.8);z-index:900;display:none;align-items:center;justify-content:center;flex-direction:column;gap:12px}
+#loading.ativo{display:flex}
+.spinner{width:36px;height:36px;border:3px solid var(--cinza2);border-top-color:var(--verde2);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#loading-msg{font-size:13px;color:var(--text2);font-weight:500}
+
+/* ── LOGIN ── */
+#tela-login{position:fixed;inset:0;background:var(--verde);z-index:999;display:flex;align-items:center;justify-content:center}
+.login-box{background:var(--branco);border-radius:var(--r2);padding:36px;width:360px;text-align:center}
+.login-marca{font-size:26px;font-weight:800;color:var(--verde);margin-bottom:4px}
+.login-sub{font-size:12px;color:var(--text3);margin-bottom:28px}
+.login-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:16px}
+.login-btn{padding:12px;border:1px solid var(--borda);border-radius:var(--r);cursor:pointer;background:var(--branco);font-size:13px;font-weight:600;color:var(--text);transition:all .15s;display:flex;flex-direction:column;align-items:center;gap:4px}
+.login-btn:hover{border-color:var(--verde2);background:var(--verde-clr);color:var(--verde2)}
+.login-btn .ini{width:36px;height:36px;border-radius:50%;background:var(--verde2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+
+/* ── FILTROS ── */
+.filtros{background:var(--branco);border:1px solid var(--borda);border-radius:var(--r2);padding:14px;margin-bottom:16px;display:flex;gap:10px;flex-wrap:wrap;align-items:flex-end}
+.filtros .fg{display:flex;flex-direction:column;gap:3px;min-width:130px}
+.filtros .fg label{font-size:10px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.4px}
+.filtros .fg input,.filtros .fg select{padding:6px 8px;font-size:12px}
+
+/* ── GRAFICOS ── */
+.graficos{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-bottom:20px}
+.grafico-card{background:var(--branco);border:1px solid var(--borda);border-radius:var(--r2);padding:16px}
+.grafico-card h4{font-size:12px;font-weight:600;color:var(--text2);margin-bottom:12px}
+
+/* ── PREVISAO BLOCO ── */
+.prev-bloco{border-radius:var(--r2);overflow:hidden;border:1px solid var(--borda);margin-bottom:14px}
+.prev-bloco-header{padding:10px 14px;font-size:12px;font-weight:700;display:flex;align-items:center;gap:8px}
+.prev-bloco.atual .prev-bloco-header{background:var(--azul-clr);color:var(--azul)}
+.prev-bloco.ajustada .prev-bloco-header{background:var(--verde-clr);color:var(--verde2)}
+.prev-bloco.dif .prev-bloco-header{background:var(--ouro-clr);color:var(--ouro)}
+.prev-bloco table th{background:transparent;font-size:11px}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="tela-login">
+  <div class="login-box">
+    <div class="login-marca">CERES 2.0</div>
+    <div class="login-sub">Operação Confinamento — 3M Agropecuária</div>
+    <div class="login-grid">
+      <button class="login-btn" onclick="login('Natalia Fonseca','NF')">
+        <div class="ini">NF</div>Natalia
+      </button>
+      <button class="login-btn" onclick="login('Ana Carolina','AC')">
+        <div class="ini">AC</div>Ana Carolina
+      </button>
+      <button class="login-btn" onclick="login('Heitor','HE')">
+        <div class="ini">HE</div>Heitor
+      </button>
+      <button class="login-btn" onclick="login('Rosielli','RO')">
+        <div class="ini">RO</div>Rosielli
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- LOADING -->
+<div id="loading"><div class="spinner"></div><div id="loading-msg">Carregando...</div></div>
+
+<!-- MODAL -->
+<div id="modal-overlay" onclick="if(event.target===this)fecharModal()">
+  <div class="modal" id="modal-box">
+    <div class="modal-header">
+      <h3 id="modal-titulo">Modal</h3>
+      <button class="btn-icone" onclick="fecharModal()">✕</button>
+    </div>
+    <div class="modal-body" id="modal-corpo"></div>
+    <div class="modal-footer" id="modal-rodape"></div>
+  </div>
+</div>
+
+<!-- SIDEBAR -->
+<nav id="sidebar">
+  <div id="sidebar-logo">
+    <div class="marca">CERES 2.0</div>
+    <div class="sub">3M AGROPECUÁRIA</div>
+  </div>
+  <div id="sidebar-user">
+    <div class="avatar" id="av-ini">NF</div>
+    <div class="avatar-info">
+      <div class="nome" id="av-nome">Natalia Fonseca</div>
+      <div class="cargo">Analista</div>
+    </div>
+  </div>
+  <div id="nav">
+    <div class="nav-section">Análises</div>
+    <div class="nav-item ativo" onclick="ir('dashboard')"><span class="ico">📊</span> Dashboard</div>
+    <div class="nav-section">Operação</div>
+    <div class="nav-item" onclick="ir('termos')"><span class="ico">📄</span> Termos</div>
+    <div class="nav-item" onclick="ir('animais')"><span class="ico">🐄</span> Animais</div>
+    <div class="nav-item" onclick="ir('previsoes')"><span class="ico">📈</span> Previsões</div>
+    <div class="nav-item" onclick="ir('abates')"><span class="ico">🔪</span> Abates</div>
+    <div class="nav-item" onclick="ir('mortes')"><span class="ico">⚠️</span> Mortes</div>
+    <div class="nav-section">Financeiro</div>
+    <div class="nav-item" onclick="ir('financeiro')"><span class="ico">💰</span> Financeiro</div>
+    <div class="nav-section">Sistema</div>
+    <div class="nav-item" onclick="migrar()"><span class="ico">📤</span> Sincronizar</div>
+    <div class="nav-item" onclick="verLogs()"><span class="ico">📋</span> Logs</div>
+  </div>
+  <div id="sidebar-bottom">
+    <button class="btn-sair" onclick="sair()">Sair</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<main id="main">
+  <div id="topbar">
+    <div>
+      <div class="topbar-titulo" id="topbar-titulo">Dashboard</div>
+      <div class="topbar-sub" id="topbar-sub">Visão geral da operação</div>
+    </div>
+    <div class="topbar-acoes" id="topbar-acoes"></div>
+  </div>
+  <div id="conteudo">
+
+    <!-- DASHBOARD -->
+    <div id="tela-dashboard" class="tela ativa">
+      <div class="metricas" id="dash-metricas"></div>
+      <div class="graficos" id="dash-graficos">
+        <div class="grafico-card"><h4>Custo acumulado por Termo</h4><canvas id="graf-custo" height="180"></canvas></div>
+        <div class="grafico-card"><h4>Animais por status</h4><canvas id="graf-status" height="180"></canvas></div>
+      </div>
+      <div class="card">
+        <div class="card-header"><h3>Termos em aberto</h3></div>
+        <div class="tbl-wrap" id="dash-tabela"></div>
+      </div>
+    </div>
+
+    <!-- TERMOS -->
+    <div id="tela-termos" class="tela">
+      <div class="card">
+        <div class="card-header">
+          <h3>Termos de Parceria</h3>
+          <button class="btn btn-primario btn-sm" onclick="abrirModalTermo()">+ Novo Termo</button>
+          <button class="btn btn-ouro btn-sm" onclick="importarTodosTermos()">📥 Importar 22 Termos</button>
+        </div>
+        <div class="filtros">
+          <div class="fg"><label>Termo</label><input type="text" id="fT-codigo" placeholder="JF012026-1" oninput="renderTermos()"></div>
+          <div class="fg"><label>Status</label>
+            <select id="fT-status" onchange="renderTermos()">
+              <option value="">Todos</option>
+              <option value="ativo">Ativo</option>
+              <option value="parcial">Parcial</option>
+              <option value="encerrado">Encerrado</option>
+              <option value="vencido">Vencido</option>
+            </select>
+          </div>
+          <button class="btn btn-ghost btn-sm" onclick="exportarTermosCSV()">📥 Excel</button>
+        </div>
+        <div class="tbl-wrap" id="tbl-termos"></div>
+      </div>
+    </div>
+
+    <!-- ANIMAIS -->
+    <div id="tela-animais" class="tela">
+      <div class="card">
+        <div class="card-header">
+          <h3>Animais — Manejo CERES 2026</h3>
+          <button class="btn btn-primario btn-sm" onclick="buscarAnimaisManejo()">🔄 Atualizar do MANEJO</button>
+        </div>
+        <div class="filtros">
+          <div class="fg"><label>Termo</label><input type="text" id="fA-termo" placeholder="JF052026-1" oninput="renderAnimais()"></div>
+          <div class="fg"><label>Baía</label><input type="text" id="fA-baia" placeholder="M-8" oninput="renderAnimais()"></div>
+          <div class="fg"><label>NF</label><input type="text" id="fA-nf" placeholder="5398" oninput="renderAnimais()"></div>
+        </div>
+        <div class="tbl-wrap" id="tbl-animais"></div>
+      </div>
+    </div>
+
+    <!-- PREVISÕES -->
+    <div id="tela-previsoes" class="tela">
+      <div class="metricas" id="prev-metricas"></div>
+      <div id="prev-blocos"></div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Previsão por Termo</h3>
+          <button class="btn btn-ghost btn-sm" onclick="exportarPrevisoesCSV()">📥 Excel</button>
+        </div>
+        <div class="filtros">
+          <div class="fg"><label>Termo</label><input type="text" id="fP-termo" placeholder="JF012026-1" oninput="renderPrevisoes()"></div>
+          <div class="fg"><label>Status</label>
+            <select id="fP-status" onchange="renderPrevisoes()">
+              <option value="">Todos</option>
+              <option value="ativo">Ativo</option>
+              <option value="vencido">Vencido</option>
+            </select>
+          </div>
+        </div>
+        <div class="tbl-wrap" id="tbl-previsoes"></div>
+      </div>
+    </div>
+
+    <!-- ABATES -->
+    <div id="tela-abates" class="tela">
+      <div class="card">
+        <div class="card-header">
+          <h3>Histórico de Abates</h3>
+          <button class="btn btn-primario btn-sm" onclick="abrirModalAbate()">+ Registrar Abate</button>
+        </div>
+        <div class="filtros">
+          <div class="fg"><label>Termo</label><input type="text" id="fAb-termo" placeholder="JF052026-1" oninput="renderAbates()"></div>
+          <div class="fg"><label>Frigorífico</label><input type="text" id="fAb-frig" placeholder="JBS" oninput="renderAbates()"></div>
+          <div class="fg"><label>De</label><input type="date" id="fAb-de" onchange="renderAbates()"></div>
+          <div class="fg"><label>Até</label><input type="date" id="fAb-ate" onchange="renderAbates()"></div>
+          <button class="btn btn-ghost btn-sm" onclick="exportarAbatesCSV()">📥 Excel</button>
+        </div>
+        <div class="tbl-wrap" id="tbl-abates"></div>
+      </div>
+    </div>
+
+    <!-- MORTES -->
+    <div id="tela-mortes" class="tela">
+      <div class="card">
+        <div class="card-header">
+          <h3>Registro de Mortes</h3>
+          <button class="btn btn-perigo btn-sm" onclick="abrirModalMorte()">+ Registrar Morte</button>
+        </div>
+        <div class="filtros">
+          <div class="fg"><label>Termo</label><input type="text" id="fM-termo" placeholder="JF052026-1" oninput="renderMortes()"></div>
+          <div class="fg"><label>De</label><input type="date" id="fM-de" onchange="renderMortes()"></div>
+          <div class="fg"><label>Até</label><input type="date" id="fM-ate" onchange="renderMortes()"></div>
+          <button class="btn btn-ghost btn-sm" onclick="exportarMortesCSV()">📥 Excel</button>
+        </div>
+        <div class="tbl-wrap" id="tbl-mortes"></div>
+      </div>
+    </div>
+
+    <!-- FINANCEIRO -->
+    <div id="tela-financeiro" class="tela">
+      <div class="metricas" id="fin-metricas"></div>
+      <div class="card">
+        <div class="card-header">
+          <h3>Controle Financeiro por Termo</h3>
+          <button class="btn btn-ghost btn-sm" onclick="exportarFinanceiroCSV()">📥 Excel</button>
+        </div>
+        <div class="tbl-wrap" id="tbl-financeiro"></div>
+      </div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const WEB_APP_URL = 'https://script.google.com/macros/s/AKfycbwGd8BMGSkLNA_IghsgcYi6Bx6NNMjFo_GrrbFn-BqyWB4fZA_quU2XBxQKMaIRfQZP/exec';
+const SID_OPERACAO = '1fXuH6o22PQlZMldXxWfApe85AbzZ3dnma5wuJXw6k5I';
+const SID_MANEJO  = '1yApyTaf4i7SGxy3cR6E1GPGsBzdNXQKhwfNaBoEMg2g';
+const KEY_MANEJO  = 'AIzaSyDGuUvLZxh8Hho5SudZgNRGkb5_HuTyfWw';
+const TAXA_DIA    = 0.00065; // 0,065% ao dia
+
+// ============================================================
+// ESTADO
+// ============================================================
+var usuario = null;
+var termos  = [];
+var animais = [];
+var abates  = [];
+var mortes  = [];
+var logs    = [];
+
+// ============================================================
+// LOGIN
+// ============================================================
+function login(nome, ini){
+  usuario = {nome:nome, ini:ini};
+  document.getElementById('av-nome').textContent = nome;
+  document.getElementById('av-ini').textContent  = ini;
+  document.getElementById('tela-login').style.display = 'none';
+  // Carregar localStorage imediatamente para não travar
+  termos  = JSON.parse(localStorage.getItem('c2_termos' )||'[]');
+  animais = JSON.parse(localStorage.getItem('c2_animais')||'[]');
+  abates  = JSON.parse(localStorage.getItem('c2_abates' )||'[]');
+  mortes  = JSON.parse(localStorage.getItem('c2_mortes' )||'[]');
+  logs    = JSON.parse(localStorage.getItem('c2_logs'   )||'[]');
+  renderTela(_telaAtual);
+  // Depois tenta buscar do Sheets em background
+  if(WEB_APP_URL) carregarDados();
+}
+function sair(){
+  usuario = null;
+  document.getElementById('tela-login').style.display = 'flex';
+}
+
+// ============================================================
+// LOADING
+// ============================================================
+function loading(msg){
+  var el = document.getElementById('loading');
+  if(msg){ el.classList.add('ativo'); document.getElementById('loading-msg').textContent = msg||'Carregando...'; }
+  else    { el.classList.remove('ativo'); }
+}
+
+// ============================================================
+// MODAL
+// ============================================================
+function abrirModal(titulo, corpo, rodape){
+  document.getElementById('modal-titulo').textContent = titulo;
+  document.getElementById('modal-corpo').innerHTML    = corpo;
+  document.getElementById('modal-rodape').innerHTML   = rodape||'';
+  document.getElementById('modal-overlay').classList.add('aberto');
+}
+function fecharModal(){ document.getElementById('modal-overlay').classList.remove('aberto'); }
+
+// ============================================================
+// NAVEGAÇÃO
+// ============================================================
+var _telaAtual = 'dashboard';
+var _titulos = {
+  dashboard: ['Dashboard','Visão geral da operação'],
+  termos:    ['Termos','Controle de Termos de Parceria'],
+  animais:   ['Animais','Plantel por Termo e Baía'],
+  previsoes: ['Previsões','Custo e resultado estimado por Termo'],
+  abates:    ['Abates','Histórico de abates registrados'],
+  mortes:    ['Mortes','Registro histórico de mortes'],
+  financeiro:['Financeiro','Controle de pagamentos por Termo'],
+};
+function ir(tela){
+  document.querySelectorAll('.tela').forEach(function(t){ t.classList.remove('ativa'); });
+  document.querySelectorAll('.nav-item').forEach(function(n){ n.classList.remove('ativo'); });
+  var el = document.getElementById('tela-'+tela);
+  if(el) el.classList.add('ativa');
+  var info = _titulos[tela]||[tela,''];
+  document.getElementById('topbar-titulo').textContent = info[0];
+  document.getElementById('topbar-sub').textContent    = info[1];
+  _telaAtual = tela;
+  // Destacar nav
+  document.querySelectorAll('.nav-item').forEach(function(n){
+    if(n.getAttribute('onclick') && n.getAttribute('onclick').includes("'"+tela+"'")){
+      n.classList.add('ativo');
+    }
+  });
+  renderTela(tela);
+}
+function renderTela(t){
+  if(t==='dashboard')  renderDashboard();
+  if(t==='termos')     renderTermos();
+  if(t==='animais')    renderAnimais();
+  if(t==='previsoes')  renderPrevisoes();
+  if(t==='abates')     renderAbates();
+  if(t==='mortes')     renderMortes();
+  if(t==='financeiro') renderFinanceiro();
+}
+
+// ============================================================
+// FORMATAÇÃO
+// ============================================================
+function fmtR(n){
+  return 'R$ '+Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+function fmtN(n,d){
+  return Number(n||0).toLocaleString('pt-BR',{minimumFractionDigits:d||0,maximumFractionDigits:d||0});
+}
+function fmtD(s){
+  if(!s||s==='--') return '--';
+  var v = String(s).trim();
+  if(v.includes('T')) v = v.split('T')[0];
+  var p = v.split('-');
+  if(p.length===3&&p[0].length===4) return p[2]+'/'+p[1]+'/'+p[0].slice(-2);
+  return v.slice(0,10)||'--';
+}
+function hoje(){ return new Date().toISOString().split('T')[0]; }
+function diasEntre(d1, d2){
+  var a = new Date(d1), b = new Date(d2||hoje());
+  return Math.max(0, Math.ceil((b-a)/86400000));
+}
+function calcJuros(vlrLiquido, dataEmissao, dataRef){
+  // Juros COMPOSTOS: VL × ((1 + taxa_dia)^dias − 1)
+  var dias = diasEntre(dataEmissao, dataRef||hoje());
+  return vlrLiquido * (Math.pow(1 + TAXA_DIA, dias) - 1);
+}
+function statusTermo(t){
+  var abatidos = abates.filter(function(a){ return a.termo===t.codigo; })
+                       .reduce(function(s,a){ return s+(Number(a.qtd)||0); },0);
+  var mortos   = mortes.filter(function(m){ return m.termo===t.codigo; }).length;
+  var restam   = (t.qtd||0) - abatidos;
+  if(abatidos===0 && hoje()>t.vencimento) return 'vencido';
+  if(restam<=0)  return 'encerrado';
+  if(abatidos>0) return 'parcial';
+  return 'ativo';
+}
+function badgeStatus(st){
+  var map = {ativo:'badge-verde',parcial:'badge-azul',encerrado:'badge-cinza',vencido:'badge-perigo'};
+  var txt = {ativo:'Ativo',parcial:'Parcial',encerrado:'Encerrado',vencido:'Vencido'};
+  return '<span class="badge '+(map[st]||'badge-cinza')+'">'+(txt[st]||st)+'</span>';
+}
+
+// ============================================================
+// API
+// ============================================================
+function apiGet(tabela){
+  if(!WEB_APP_URL) return Promise.resolve([]);
+  return fetch(WEB_APP_URL+'?acao=ler&tabela='+tabela+'&t='+Date.now())
+    .then(function(r){ return r.json(); })
+    .then(function(j){ return j.registros||[]; })
+    .catch(function(){ return []; });
+}
+function apiPost(payload){
+  if(!WEB_APP_URL) return Promise.resolve({ok:true});
+  return fetch(WEB_APP_URL,{method:'POST',body:JSON.stringify(payload)})
+    .then(function(r){ return r.json(); })
+    .catch(function(){ return {ok:false}; });
+}
+
+// ============================================================
+// CARREGAR DADOS
+// ============================================================
+function carregarDados(){
+  loading('Sincronizando com a planilha...');
+  var timeout = setTimeout(function(){
+    loading(false);
+  }, 8000); // máximo 8 segundos
+  Promise.all([apiGet('TERMOS'),apiGet('ANIMAIS'),apiGet('ABATES'),apiGet('MORTES'),apiGet('LOGS')])
+  .then(function(res){
+    clearTimeout(timeout);
+    if(res[0]&&res[0].length) { termos  = res[0]; localStorage.setItem('c2_termos',JSON.stringify(termos)); }
+    if(res[1]&&res[1].length) { animais = res[1]; localStorage.setItem('c2_animais',JSON.stringify(animais)); }
+    if(res[2]&&res[2].length) { abates  = res[2]; localStorage.setItem('c2_abates',JSON.stringify(abates)); }
+    if(res[3]&&res[3].length) { mortes  = res[3]; localStorage.setItem('c2_mortes',JSON.stringify(mortes)); }
+    if(res[4]&&res[4].length) { logs    = res[4]; localStorage.setItem('c2_logs',JSON.stringify(logs)); }
+    loading(false);
+    renderTela(_telaAtual);
+  })
+  .catch(function(){
+    clearTimeout(timeout);
+    loading(false);
+    renderTela(_telaAtual);
+  });
+}
+function salvarLS(){
+  localStorage.setItem('c2_termos',  JSON.stringify(termos));
+  localStorage.setItem('c2_animais', JSON.stringify(animais));
+  localStorage.setItem('c2_abates',  JSON.stringify(abates));
+  localStorage.setItem('c2_mortes',  JSON.stringify(mortes));
+  localStorage.setItem('c2_logs',    JSON.stringify(logs));
+}
+function migrar(){
+  loading('Sincronizando com a planilha...');
+  Promise.all([
+    apiPost({acao:'salvar',tabela:'TERMOS', dados:termos}),
+    apiPost({acao:'salvar',tabela:'ANIMAIS',dados:animais}),
+    apiPost({acao:'salvar',tabela:'ABATES', dados:abates}),
+    apiPost({acao:'salvar',tabela:'MORTES', dados:mortes}),
+    apiPost({acao:'salvar',tabela:'LOGS',   dados:logs}),
+  ]).then(function(){
+    loading(false);
+    alert('✅ Dados sincronizados com a planilha!');
+  }).catch(function(){
+    loading(false);
+    alert('⚠️ Erro ao sincronizar. Verifique o Apps Script.');
+  });
+}
+function log(acao,tabela,id,campo,ant,novo){
+  logs.push({id:Date.now(),usuario:usuario?usuario.nome:'',data:hoje(),hora:new Date().toLocaleTimeString('pt-BR'),acao,tabela,idReg:id,campo,ant,novo});
+  salvarLS();
+}
+
+// ============================================================
+// DASHBOARD
+// ============================================================
+function renderDashboard(){
+  var total   = termos.length;
+  var totalAn = termos.reduce(function(s,t){ return s+(Number(t.qtd)||0); },0);
+  var totalVL = termos.reduce(function(s,t){ return s+(Number(t.valorLiquido)||0); },0);
+  var totalJ  = termos.reduce(function(s,t){ return s+calcJuros(Number(t.valorLiquido)||0, t.dataEmissao); },0);
+  var ativos  = termos.filter(function(t){ return statusTermo(t)==='ativo'; }).length;
+  var el = document.getElementById('dash-metricas');
+  el.innerHTML =
+    metricaHtml('Termos cadastrados', total,'','') +
+    metricaHtml('Animais confinados', fmtN(totalAn),'','verde') +
+    metricaHtml('Custo de aquisição', fmtR(totalVL),'total','') +
+    metricaHtml('Juros acumulados', fmtR(totalJ),'até hoje','ouro') +
+    metricaHtml('Custo total atual', fmtR(totalVL+totalJ),'acumulado','') +
+    metricaHtml('Termos ativos', ativos,'em andamento','verde');
+
+  // Tabela termos em aberto
+  var abertos = termos.filter(function(t){ var s=statusTermo(t); return s==='ativo'||s==='parcial'||s==='vencido'; });
+  var h = '<table><thead><tr><th>Termo</th><th>Emissão</th><th>Vencimento</th><th>Animais</th><th>Vlr Líquido</th><th>Dias</th><th>Juros ac.</th><th>Status</th></tr></thead><tbody>';
+  if(!abertos.length) h='<div class="sem-dados">Nenhum termo cadastrado ainda.</div>';
+  else abertos.forEach(function(t){
+    var dias = diasEntre(t.dataEmissao);
+    var j    = calcJuros(Number(t.valorLiquido)||0, t.dataEmissao);
+    var st   = statusTermo(t);
+    h+='<tr onclick="irTermo(\''+t.codigo+'\')" style="cursor:pointer">';
+    h+='<td><b>'+t.codigo+'</b></td>';
+    h+='<td>'+fmtD(t.dataEmissao)+'</td>';
+    h+='<td>'+fmtD(t.vencimento)+'</td>';
+    h+='<td style="text-align:center">'+fmtN(t.qtd)+'</td>';
+    h+='<td>'+fmtR(t.valorLiquido)+'</td>';
+    h+='<td style="text-align:center"><span class="badge '+(dias>120?'badge-perigo':dias>90?'badge-ouro':'badge-verde')+'">'+dias+'d</span></td>';
+    h+='<td style="color:var(--ouro)">'+fmtR(j)+'</td>';
+    h+='<td>'+badgeStatus(st)+'</td>';
+    h+='</tr>';
+  });
+  if(abertos.length) h+='</tbody></table>';
+  document.getElementById('dash-tabela').innerHTML = h;
+
+  // Gráficos
+  renderGrafDash();
+}
+function metricaHtml(lbl,val,sub,cls){
+  return '<div class="metrica '+(cls||'')+'">'+'<div class="lbl">'+lbl+'</div><div class="val">'+val+'</div>'+(sub?'<div class="sub">'+sub+'</div>':'')+'</div>';
+}
+var _gCusto=null,_gStatus=null;
+function renderGrafDash(){
+  var top = termos.slice().sort(function(a,b){ return (Number(b.valorLiquido)||0)-(Number(a.valorLiquido)||0); }).slice(0,8);
+  var ctxC = document.getElementById('graf-custo');
+  if(_gCusto) _gCusto.destroy();
+  _gCusto = new Chart(ctxC,{type:'bar',data:{
+    labels: top.map(function(t){ return t.codigo; }),
+    datasets:[
+      {label:'Vlr Líquido',data:top.map(function(t){ return Number(t.valorLiquido)||0; }),backgroundColor:'#2E7D4F88',borderRadius:4},
+      {label:'Juros ac.',data:top.map(function(t){ return calcJuros(Number(t.valorLiquido)||0,t.dataEmissao); }),backgroundColor:'#DAA52088',borderRadius:4}
+    ]
+  },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}},scales:{x:{grid:{display:false}},y:{ticks:{callback:function(v){ return 'R$'+(v/1000).toFixed(0)+'k';}},grid:{color:'#f0f0f0'}}}}});
+
+  var cts = {ativo:0,parcial:0,encerrado:0,vencido:0};
+  termos.forEach(function(t){ var s=statusTermo(t); cts[s]=(cts[s]||0)+1; });
+  var ctxS = document.getElementById('graf-status');
+  if(_gStatus) _gStatus.destroy();
+  _gStatus = new Chart(ctxS,{type:'doughnut',data:{
+    labels:['Ativo','Parcial','Encerrado','Vencido'],
+    datasets:[{data:[cts.ativo,cts.parcial,cts.encerrado,cts.vencido],backgroundColor:['#2E7D4F','#1565C0','#AAB5AA','#C62828'],borderWidth:0}]
+  },options:{responsive:true,plugins:{legend:{position:'bottom',labels:{font:{size:10}}}}}});
+}
+function irTermo(codigo){
+  ir('termos');
+  setTimeout(function(){ document.getElementById('fT-codigo').value=codigo; renderTermos(); },100);
+}
+
+// ============================================================
+// TERMOS
+// ============================================================
+function renderTermos(){
+  var fC = (document.getElementById('fT-codigo').value||'').trim().toLowerCase();
+  var fS = document.getElementById('fT-status').value||'';
+  var fil = termos.filter(function(t){
+    if(fC && !t.codigo.toLowerCase().includes(fC)) return false;
+    if(fS && statusTermo(t)!==fS) return false;
+    return true;
+  });
+  var h='';
+  if(!fil.length){ document.getElementById('tbl-termos').innerHTML='<div class="sem-dados">Nenhum termo encontrado.</div>'; return; }
+  h='<table><thead><tr><th>Código</th><th>Emissão</th><th>Vencimento</th><th>Animais</th><th>Vlr/Cb</th><th>Vlr Líquido</th><th>Vlr Nominal</th><th>Taxa/dia</th><th>Dias</th><th>Juros ac.</th><th>Custo total</th><th>Mortes</th><th>Abatidos</th><th>Status</th><th></th></tr></thead><tbody>';
+  fil.forEach(function(t,i){
+    var dias  = diasEntre(t.dataEmissao);
+    var j     = calcJuros(Number(t.valorLiquido)||0, t.dataEmissao);
+    var ct    = (Number(t.valorLiquido)||0)+j;
+    var morts = mortes.filter(function(m){ return m.termo===t.codigo; }).length;
+    var abat  = abates.filter(function(a){ return a.termo===t.codigo; }).reduce(function(s,a){ return s+(Number(a.qtd)||0); },0);
+    var st    = statusTermo(t);
+    h+='<tr>';
+    h+='<td><b>'+t.codigo+'</b></td>';
+    h+='<td>'+fmtD(t.dataEmissao)+'</td>';
+    h+='<td>'+fmtD(t.vencimento)+'</td>';
+    h+='<td style="text-align:center">'+fmtN(t.qtd)+'</td>';
+    h+='<td>'+fmtR(t.valorCabeca)+'</td>';
+    h+='<td>'+fmtR(t.valorLiquido)+'</td>';
+    h+='<td>'+fmtR(t.valorNominal)+'</td>';
+    h+='<td style="text-align:center">'+Number(t.custeio||1.95).toFixed(3)+'%/mês</td>';
+    h+='<td style="text-align:center"><span class="badge '+(dias>120?'badge-perigo':dias>90?'badge-ouro':'badge-verde')+'">'+dias+'d</span></td>';
+    h+='<td style="color:var(--ouro);font-weight:600">'+fmtR(j)+'</td>';
+    h+='<td style="font-weight:600">'+fmtR(ct)+'</td>';
+    h+='<td style="text-align:center">'+(morts>0?'<span class="badge badge-perigo">'+morts+'</span>':'—')+'</td>';
+    h+='<td style="text-align:center">'+(abat>0?'<span class="badge badge-azul">'+abat+'</span>':'—')+'</td>';
+    h+='<td>'+badgeStatus(st)+'</td>';
+    h+='<td><button class="btn-icone" onclick="editarTermo('+termos.indexOf(t)+')" title="Editar">✏️</button> <button class="btn-icone" onclick="deletarTermo('+termos.indexOf(t)+')" title="Excluir">🗑️</button></td>';
+    h+='</tr>';
+    // NFs e baias vinculadas
+    var nfsRow = t.nfs&&t.nfs.length ? t.nfs.join(', ') : '—';
+    h+='<tr><td colspan="15" style="background:var(--cinza);padding:6px 12px">';
+    h+='<span style="font-size:10px;color:var(--text3);font-weight:600;margin-right:8px">NFs:</span>';
+    h+='<span style="font-size:12px;margin-right:12px">'+nfsRow+'</span>';
+    if(t.baias&&t.baias.length){
+      h+='<span style="font-size:10px;color:var(--text3);font-weight:600;margin-right:6px">BAÍAS:</span>';
+      t.baias.forEach(function(b){
+        h+='<span class="baia-pill" style="margin-right:4px">'+b.baia+' · '+b.qtd+'</span>';
+      });
+    }
+    h+='<button class="btn btn-ghost btn-sm" style="margin-left:8px" onclick="vincularNF('+termos.indexOf(t)+')">✏️ Vincular NFs / Buscar MANEJO</button>';
+    h+='</td></tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('tbl-termos').innerHTML = h;
+}
+
+function abrirModalTermo(){
+  var corpo = '<div style="margin-bottom:14px"><div class="upload-area" onclick="document.getElementById(\'inp-pdf\').click()" id="ua-termo"><div class="ico-upload">📄</div><p>Clique para anexar o PDF do Termo</p><small>O sistema extrai as informações automaticamente</small><input type="file" id="inp-pdf" accept=".pdf" style="display:none" onchange="lerTermoPDF(this)"></div></div>';
+  corpo += '<div class="form-grid" id="form-termo-campos">';
+  corpo += '<div class="form-group"><label>Código do Termo</label><input type="text" id="t-codigo" placeholder="JF012026-1"></div>';
+  corpo += '<div class="form-group"><label>Data de Emissão (assinatura)</label><input type="date" id="t-emissao"></div>';
+  corpo += '<div class="form-group"><label>Vencimento</label><input type="date" id="t-vencimento"></div>';
+  corpo += '<div class="form-group"><label>Qtd Animais</label><input type="number" id="t-qtd" min="1"></div>';
+  corpo += '<div class="form-group"><label>Valor por Cabeça (R$)</label><input type="number" id="t-vcab" step="0.01"></div>';
+  corpo += '<div class="form-group"><label>Valor Líquido (R$)</label><input type="number" id="t-vliq" step="0.01"></div>';
+  corpo += '<div class="form-group"><label>Valor Nominal (R$)</label><input type="number" id="t-vnom" step="0.01"></div>';
+  corpo += '<div class="form-group"><label>Custeio Operação (%/mês)</label><input type="number" id="t-custeio" value="1.95" step="0.01"></div>';
+  corpo += '<div class="form-group full"><label>Observações</label><textarea id="t-obs" rows="2"></textarea></div>';
+  corpo += '</div>';
+  var rodape = '<button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primario" onclick="salvarTermo()">Salvar Termo</button>';
+  abrirModal('Novo Termo de Parceria', corpo, rodape);
+}
+
+function lerTermoPDF(input){
+  var file = input.files[0];
+  if(!file) return;
+  var ua = document.getElementById('ua-termo');
+  ua.innerHTML = '<div style="color:var(--verde2);font-size:13px;font-weight:600">⏳ Lendo PDF com IA...</div>';
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var b64 = e.target.result.split(',')[1];
+    // Chama via Apps Script para evitar CORS
+    fetch(WEB_APP_URL, {
+      method: 'POST',
+      body: JSON.stringify({ acao: 'lerPDF', base64: b64 })
+    })
+    .then(function(r){ return r.json(); })
+    .then(function(dados){
+      if(dados.erro) throw new Error(dados.erro);
+      if(dados.codigo)       document.getElementById('t-codigo').value     = dados.codigo;
+      if(dados.dataEmissao)  document.getElementById('t-emissao').value    = dados.dataEmissao;
+      if(dados.vencimento)   document.getElementById('t-vencimento').value = dados.vencimento;
+      if(dados.qtd)          document.getElementById('t-qtd').value         = dados.qtd;
+      if(dados.valorCabeca)  document.getElementById('t-vcab').value        = dados.valorCabeca;
+      if(dados.valorLiquido) document.getElementById('t-vliq').value        = dados.valorLiquido;
+      if(dados.valorNominal) document.getElementById('t-vnom').value        = dados.valorNominal;
+      if(dados.custeio)      document.getElementById('t-custeio').value     = dados.custeio;
+      ua.innerHTML = '<div style="color:var(--verde2);font-size:13px;font-weight:600">✅ PDF lido! Revise os campos abaixo.</div>';
+    })
+    .catch(function(err){
+      console.error('Erro lerTermoPDF:', err);
+      ua.innerHTML = '<div style="color:var(--perigo);font-size:12px">⚠️ Não foi possível ler o PDF. Preencha os campos manualmente.</div>';
+    });
+  };
+  reader.readAsDataURL(file);
+}
+
+function salvarTermo(){
+  var codigo = document.getElementById('t-codigo').value.trim();
+  if(!codigo){ alert('Informe o código do Termo.'); return; }
+  if(termos.find(function(t){ return t.codigo===codigo; })){ alert('Termo '+codigo+' já cadastrado.'); return; }
+  var custeio = parseFloat(document.getElementById('t-custeio').value)||1.95;
+  var novo = {
+    id: Date.now(),
+    codigo: codigo,
+    dataEmissao: document.getElementById('t-emissao').value||'',
+    vencimento:  document.getElementById('t-vencimento').value||'',
+    qtd:         parseInt(document.getElementById('t-qtd').value)||0,
+    valorCabeca: parseFloat(document.getElementById('t-vcab').value)||0,
+    valorLiquido:parseFloat(document.getElementById('t-vliq').value)||0,
+    valorNominal:parseFloat(document.getElementById('t-vnom').value)||0,
+    custeio:     custeio,
+    taxaDia:     custeio/30/100, // 1,95%/mês ÷ 30 = 0,065%/dia = 0,00065
+    obs:         document.getElementById('t-obs').value||'',
+    baias:       [],
+  };
+  termos.push(novo);
+  salvarLS();
+  apiPost({acao:'salvarUm',tabela:'TERMOS',registro:novo});
+  log('CRIAR','TERMOS',novo.id,'codigo','',novo.codigo);
+  fecharModal();
+  renderTermos();
+  alert('✅ Termo '+codigo+' cadastrado!');
+}
+
+function editarTermo(idx){
+  var t = termos[idx];
+  var corpo = '<div class="form-grid">';
+  corpo += '<div class="form-group"><label>Código</label><input type="text" id="et-codigo" value="'+t.codigo+'" readonly></div>';
+  corpo += '<div class="form-group"><label>Data Emissão</label><input type="date" id="et-emissao" value="'+(t.dataEmissao||'')+'"></div>';
+  corpo += '<div class="form-group"><label>Vencimento</label><input type="date" id="et-venc" value="'+(t.vencimento||'')+'"></div>';
+  corpo += '<div class="form-group"><label>Qtd Animais</label><input type="number" id="et-qtd" value="'+(t.qtd||0)+'"></div>';
+  corpo += '<div class="form-group"><label>Valor/Cabeça</label><input type="number" id="et-vcab" value="'+(t.valorCabeca||0)+'" step="0.01"></div>';
+  corpo += '<div class="form-group"><label>Valor Líquido</label><input type="number" id="et-vliq" value="'+(t.valorLiquido||0)+'" step="0.01"></div>';
+  corpo += '<div class="form-group"><label>Valor Nominal</label><input type="number" id="et-vnom" value="'+(t.valorNominal||0)+'" step="0.01"></div>';
+  corpo += '<div class="form-group"><label>Custeio (%/mês)</label><input type="number" id="et-custeio" value="'+(t.custeio||1.95)+'" step="0.01"></div>';
+  corpo += '<div class="form-group full"><label>Observações</label><textarea id="et-obs">'+( t.obs||'')+'</textarea></div>';
+  corpo += '</div>';
+  var rodape = '<button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primario" onclick="confirmarEditarTermo('+idx+')">Salvar</button>';
+  abrirModal('Editar Termo — '+t.codigo, corpo, rodape);
+}
+function confirmarEditarTermo(idx){
+  var t = termos[idx];
+  var custeio = parseFloat(document.getElementById('et-custeio').value)||1.95;
+  t.dataEmissao  = document.getElementById('et-emissao').value;
+  t.vencimento   = document.getElementById('et-venc').value;
+  t.qtd          = parseInt(document.getElementById('et-qtd').value)||0;
+  t.valorCabeca  = parseFloat(document.getElementById('et-vcab').value)||0;
+  t.valorLiquido = parseFloat(document.getElementById('et-vliq').value)||0;
+  t.valorNominal = parseFloat(document.getElementById('et-vnom').value)||0;
+  t.custeio      = custeio;
+  t.taxaDia      = custeio/30/100; // composto diário
+  t.obs          = document.getElementById('et-obs').value||'';
+  salvarLS();
+  apiPost({acao:'salvarUm',tabela:'TERMOS',registro:t});
+  fecharModal();
+  renderTermos();
+}
+function deletarTermo(idx){
+  if(!confirm('Excluir o Termo '+termos[idx].codigo+'? Esta ação não pode ser desfeita.')) return;
+  var rm = termos.splice(idx,1)[0];
+  salvarLS();
+  apiPost({acao:'salvar',tabela:'TERMOS',dados:termos});
+  log('DELETAR','TERMOS',rm.id,'codigo',rm.codigo,'');
+  renderTermos();
+}
+function vincularNF(idx){
+  var t = termos[idx];
+  if(!t.nfs) t.nfs=[];
+
+  var corpo = '<p style="font-size:12px;color:var(--text2);margin-bottom:14px">Informe as Notas Fiscais do Termo <b>'+t.codigo+'</b>.<br><small>Após vincular, clique em "Buscar no MANEJO" para puxar baías e quantidades automaticamente.</small></p>';
+  corpo += '<div class="form-grid">';
+  corpo += '<div class="form-group full"><label>Nota(s) Fiscal(is)</label><input type="text" id="vn-nfs" placeholder="Ex: 5397, 5398, 5399" value="'+(t.nfs||[]).join(', ')+'"></div>';
+  corpo += '</div>';
+
+  if(t.baias&&t.baias.length){
+    corpo += '<div style="margin-top:14px"><div style="font-size:11px;color:var(--text3);font-weight:600;margin-bottom:6px">BAÍAS VINCULADAS (do MANEJO)</div>';
+    corpo += '<div class="baia-pills">';
+    t.baias.forEach(function(b){
+      corpo += '<span class="baia-pill">'+b.baia+' · '+b.qtd+' animais · NF '+b.nf+'</span>';
+    });
+    corpo += '</div></div>';
+  }
+
+  var rodape = '<button class="btn btn-ghost" onclick="fecharModal()">Fechar</button>'+
+    '<button class="btn btn-ouro btn-sm" onclick="buscarNFsManejo('+idx+')">🔍 Buscar no MANEJO</button>'+
+    '<button class="btn btn-primario" onclick="confirmarVincularNF('+idx+')">Salvar NFs</button>';
+  abrirModal('Vincular NFs — '+t.codigo, corpo, rodape);
+}
+
+function confirmarVincularNF(idx){
+  var nfsStr = (document.getElementById('vn-nfs').value||'').trim();
+  if(!nfsStr){ alert('Informe ao menos uma NF.'); return; }
+  var nfs = nfsStr.split(/[,;\s]+/).map(function(n){ return n.trim(); }).filter(Boolean);
+  termos[idx].nfs = nfs;
+  salvarLS();
+  apiPost({acao:'salvarUm',tabela:'TERMOS',registro:termos[idx]});
+  fecharModal();
+  renderTermos();
+  alert('✅ NFs salvas! Clique em "Buscar no MANEJO" para puxar baías e quantidades.');
+}
+
+function buscarNFsManejo(idx){
+  var t = termos[idx];
+  var nfs = t.nfs||[];
+  if(!nfs.length){ alert('Vincule as NFs primeiro.'); return; }
+
+  loading('Buscando no MANEJO...');
+  fetch('https://sheets.googleapis.com/v4/spreadsheets/'+SID_MANEJO+'/values/'+encodeURIComponent('Manejo ceres!A:L')+'?key='+KEY_MANEJO)
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    loading(false);
+    if(!d.values||d.values.length<2){ alert('Não foi possível carregar o MANEJO.'); return; }
+
+    // Filtrar animais das NFs deste termo
+    var rows = d.values.slice(1).filter(function(r){
+      return nfs.indexOf(String(r[1]||'').trim()) >= 0;
+    });
+
+    if(!rows.length){ alert('Nenhum animal encontrado para as NFs: '+nfs.join(', ')); return; }
+
+    // Agrupar por baía
+    var baiasMap = {};
+    rows.forEach(function(r){
+      var baia = String(r[9]||'').trim();
+      var nf   = String(r[1]||'').trim();
+      if(!baia) return;
+      if(!baiasMap[baia]) baiasMap[baia] = {baia:baia, nf:nf, qtd:0};
+      baiasMap[baia].qtd++;
+    });
+
+    var baias = Object.values(baiasMap).sort(function(a,b){ return a.baia.localeCompare(b.baia,'pt',{numeric:true}); });
+    var totalAnimais = baias.reduce(function(s,b){ return s+b.qtd; },0);
+
+    // Atualizar também os animais globais
+    rows.forEach(function(r){
+      var sisbov = String(r[3]||'').trim();
+      if(!sisbov) return;
+      var existente = animais.find(function(a){ return a.sisbov===sisbov; });
+      var obj = {
+        qtd:r[0]||'', nf:String(r[1]||'').trim(), gta:r[2]||'',
+        sisbov:sisbov, identificador:String(r[4]||'').trim(),
+        ncfCeres:String(r[5]||'').trim(), codAlt:String(r[6]||'').trim(),
+        peso:parseFloat(r[7])||0, raca:r[8]||'', baia:String(r[9]||'').trim(),
+        obs:r[10]||'', dataManejo:r[11]||'', termo:t.codigo
+      };
+      if(existente){ Object.assign(existente, obj); }
+      else { animais.push(obj); }
+    });
+
+    termos[idx].baias = baias;
+    salvarLS();
+    apiPost({acao:'salvarUm',tabela:'TERMOS',registro:termos[idx]});
+    apiPost({acao:'salvar',tabela:'ANIMAIS',dados:animais});
+
+    fecharModal();
+    renderTermos();
+    alert('✅ '+totalAnimais+' animais encontrados em '+baias.length+' baías!\n\n'+
+      baias.map(function(b){ return b.baia+': '+b.qtd+' animais (NF '+b.nf+')'; }).join('\n'));
+  })
+  .catch(function(e){ loading(false); alert('Erro ao buscar MANEJO: '+e.message); });
+}
+
+// Manter compatibilidade com chamadas antigas
+function vincularBaia(idx){ vincularNF(idx); }
+
+
+// ============================================================
+// ANIMAIS (MANEJO)
+// ============================================================
+function buscarAnimaisManejo(){
+  loading('Buscando animais no MANEJO...');
+  fetch('https://sheets.googleapis.com/v4/spreadsheets/'+SID_MANEJO+'/values/'+encodeURIComponent('Manejo ceres!A:L')+'?key='+KEY_MANEJO)
+  .then(function(r){ return r.json(); })
+  .then(function(d){
+    loading(false);
+    if(!d.values||d.values.length<2){ alert('Não foi possível carregar o MANEJO.'); return; }
+    var cab = d.values[0]; // Qtd,NF,GTAs,Sisbov,Identificador,NCF Ceres,Código Alternativo,Peso,Raça,Baias,OBS,MANEJO
+    animais = d.values.slice(1).filter(function(r){ return r[3]; }).map(function(r){
+      return {
+        qtd:r[0]||'', nf:String(r[1]||'').trim(), gta:r[2]||'',
+        sisbov:String(r[3]||'').trim(), identificador:String(r[4]||'').trim(),
+        ncfCeres:String(r[5]||'').trim(), codAlt:String(r[6]||'').trim(),
+        peso:parseFloat(r[7])||0, raca:r[8]||'', baia:String(r[9]||'').trim(),
+        obs:r[10]||'', dataManejo:r[11]||'', termo:''
+      };
+    });
+    // Tentar vincular por NF → encontrar Termo que tenha essa NF/baía
+    animais.forEach(function(a){
+      var t = termos.find(function(t){ return t.baias && t.baias.find(function(b){ return b.baia===a.baia; }); });
+      if(t) a.termo = t.codigo;
+    });
+    salvarLS();
+    apiPost({acao:'salvar',tabela:'ANIMAIS',dados:animais});
+    renderAnimais();
+    alert('✅ '+animais.length+' animais carregados do MANEJO.');
+  })
+  .catch(function(e){ loading(false); alert('Erro: '+e.message); });
+}
+
+function renderAnimais(){
+  var fT = (document.getElementById('fA-termo').value||'').trim().toLowerCase();
+  var fB = (document.getElementById('fA-baia').value||'').trim().toLowerCase();
+  var fN = (document.getElementById('fA-nf').value||'').trim();
+  var fil = animais.filter(function(a){
+    if(fT && !a.termo.toLowerCase().includes(fT)) return false;
+    if(fB && !a.baia.toLowerCase().includes(fB)) return false;
+    if(fN && String(a.nf).trim()!==fN) return false;
+    return true;
+  }).slice(0,200); // limite para performance
+  if(!fil.length){ document.getElementById('tbl-animais').innerHTML='<div class="sem-dados">Nenhum animal. Clique em "Atualizar do MANEJO".</div>'; return; }
+  var h='<table><thead><tr><th>#</th><th>Sisbov</th><th>Identificador</th><th>NCF Ceres</th><th>NF</th><th>Baía</th><th>Peso (kg)</th><th>Raça</th><th>Manejo</th><th>Termo</th></tr></thead><tbody>';
+  fil.forEach(function(a,i){
+    h+='<tr>';
+    h+='<td style="color:var(--text3)">'+a.qtd+'</td>';
+    h+='<td style="font-family:monospace;font-size:11px">'+a.sisbov+'</td>';
+    h+='<td style="font-family:monospace;font-size:11px">'+a.identificador+'</td>';
+    h+='<td style="font-family:monospace;font-size:11px">'+a.ncfCeres+'</td>';
+    h+='<td><b>'+a.nf+'</b></td>';
+    h+='<td><span class="badge badge-cinza">'+a.baia+'</span></td>';
+    h+='<td>'+fmtN(a.peso)+'</td>';
+    h+='<td>'+a.raca+'</td>';
+    h+='<td>'+fmtD(a.dataManejo)+'</td>';
+    h+='<td>'+(a.termo?'<span class="badge badge-verde">'+a.termo+'</span>':'<span class="badge badge-cinza">—</span>')+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  if(animais.length>200) h+='<div style="padding:8px 12px;font-size:11px;color:var(--text3)">Exibindo 200 de '+animais.length+' animais. Use os filtros para refinar.</div>';
+  document.getElementById('tbl-animais').innerHTML = h;
+}
+
+// ============================================================
+// PREVISÕES
+// ============================================================
+function renderPrevisoes(){
+  var fT = (document.getElementById('fP-termo').value||'').trim().toLowerCase();
+  var fS = document.getElementById('fP-status').value||'';
+  var hj = hoje();
+  var fil = termos.filter(function(t){
+    var st = statusTermo(t);
+    if(st==='encerrado') return false;
+    if(fT && !t.codigo.toLowerCase().includes(fT)) return false;
+    if(fS==='vencido' && hj<=t.vencimento) return false;
+    if(fS==='ativo' && hj>t.vencimento) return false;
+    return true;
+  });
+
+  // Totais
+  var tQtd=0,tVL=0,tJH=0,tJV=0,tPrev=0;
+  fil.forEach(function(t){
+    var vl   = Number(t.valorLiquido)||0;
+    var jHoje= calcJuros(vl, t.dataEmissao, hj);
+    var jVenc= calcJuros(vl, t.dataEmissao, t.vencimento>hj?t.vencimento:hj);
+    tQtd+=Number(t.qtd)||0; tVL+=vl; tJH+=jHoje; tJV+=jVenc;
+  });
+
+  var el = document.getElementById('prev-metricas');
+  el.innerHTML =
+    metricaHtml('Animais em previsão',fmtN(tQtd),'','verde')+
+    metricaHtml('Custo aquisição',fmtR(tVL),'total','')+
+    metricaHtml('Juros até hoje',fmtR(tJH),'acumulado','ouro')+
+    metricaHtml('Juros até vencimento',fmtR(tJV),'estimado','ouro')+
+    metricaHtml('Custo total atual',fmtR(tVL+tJH),'','');
+
+  // Tabela
+  if(!fil.length){ document.getElementById('tbl-previsoes').innerHTML='<div class="sem-dados">Nenhum Termo ativo.</div>'; return; }
+  var h='<table><thead><tr><th>Termo</th><th>Animais</th><th>Emissão</th><th>Vencimento</th><th>Dias corridos</th><th>Dias até venc.</th><th>Vlr Líquido</th><th>Juros hoje</th><th>Custo total hoje</th><th>Custo/cb hoje</th><th>Juros no venc.</th><th>Custo total venc.</th><th>Status</th></tr></thead><tbody>';
+  fil.forEach(function(t){
+    var vl    = Number(t.valorLiquido)||0;
+    var qtd   = Number(t.qtd)||0;
+    var dc    = diasEntre(t.dataEmissao, hj);
+    var dv    = Math.max(0, diasEntre(hj, t.vencimento));
+    var jH    = calcJuros(vl, t.dataEmissao, hj);
+    var jV    = calcJuros(vl, t.dataEmissao, t.vencimento>hj?t.vencimento:hj);
+    var ctH   = vl+jH;
+    var ctV   = vl+jV;
+    var ccb   = qtd>0?ctH/qtd:0;
+    var venc  = hj>t.vencimento;
+    h+='<tr>';
+    h+='<td><b>'+t.codigo+'</b></td>';
+    h+='<td style="text-align:center">'+fmtN(qtd)+'</td>';
+    h+='<td>'+fmtD(t.dataEmissao)+'</td>';
+    h+='<td>'+fmtD(t.vencimento)+'</td>';
+    h+='<td style="text-align:center"><span class="badge '+(dc>120?'badge-perigo':dc>90?'badge-ouro':'badge-verde')+'">'+dc+'d</span></td>';
+    h+='<td style="text-align:center">'+(venc?'<span class="badge badge-perigo">Vencido</span>':'<span class="badge badge-cinza">'+dv+'d</span>')+'</td>';
+    h+='<td>'+fmtR(vl)+'</td>';
+    h+='<td style="color:var(--ouro);font-weight:600">'+fmtR(jH)+'</td>';
+    h+='<td style="font-weight:600">'+fmtR(ctH)+'</td>';
+    h+='<td>'+fmtR(ccb)+'</td>';
+    h+='<td style="color:var(--ouro)">'+fmtR(jV)+'</td>';
+    h+='<td>'+fmtR(ctV)+'</td>';
+    h+='<td>'+badgeStatus(statusTermo(t))+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('tbl-previsoes').innerHTML = h;
+}
+
+// ============================================================
+// ABATES
+// ============================================================
+function abrirModalAbate(){
+  if(!termos.length){ alert('Cadastre pelo menos um Termo antes de registrar um abate.'); return; }
+  var ops = termos.filter(function(t){ var s=statusTermo(t); return s==='ativo'||s==='parcial'||s==='vencido'; })
+    .map(function(t){ return '<option value="'+t.codigo+'">'+t.codigo+' ('+fmtN(t.qtd)+' animais)</option>'; }).join('');
+  var corpo = '<div class="form-grid">';
+  corpo += '<div class="form-group full"><label>Termo</label><select id="ab-termo" onchange="carregarBaiasAbate()"><option value="">Selecione...</option>'+ops+'</select></div>';
+  corpo += '<div class="form-group"><label>Data do Abate</label><input type="date" id="ab-data" value="'+hoje()+'"></div>';
+  corpo += '<div class="form-group"><label>Frigorífico</label><input type="text" id="ab-frig" placeholder="JBS / FRIGOL / NATURAFRIG"></div>';
+  corpo += '<div class="form-group"><label>Nº Romaneio</label><input type="text" id="ab-rom" placeholder="106376"></div>';
+  corpo += '<div class="form-group"><label>Qtd Animais Abatidos</label><input type="number" id="ab-qtd" min="1" onchange="calcAbate()"></div>';
+  corpo += '<div class="form-group"><label>Receita Bruta (R$)</label><input type="number" id="ab-receita" step="0.01" onchange="calcAbate()"></div>';
+  corpo += '<div class="form-group"><label>Funrural (R$)</label><input type="number" id="ab-funrural" step="0.01" value="0" onchange="calcAbate()"></div>';
+  corpo += '<div class="form-group"><label>FundePec (R$)</label><input type="number" id="ab-fundepec" step="0.01" value="0" onchange="calcAbate()"></div>';
+  corpo += '<div class="form-group"><label>Outros descontos (R$)</label><input type="number" id="ab-outros" step="0.01" value="0" onchange="calcAbate()"></div>';
+  corpo += '</div>';
+  corpo += '<div id="ab-calculo" style="background:var(--cinza);border-radius:var(--r);padding:12px;margin-top:12px;display:none"></div>';
+  corpo += '<div style="margin-top:12px"><label style="font-size:11px;font-weight:600;color:var(--text3)">IMPORTAR ROMANEIO (PDF/TXT)</label>';
+  corpo += '<div class="upload-area" style="margin-top:6px;padding:16px" onclick="document.getElementById(\'ab-pdf\').click()"><p style="font-size:12px">Clique para anexar o romaneio</p><small>A IA extrai receita e descontos automaticamente</small><input type="file" id="ab-pdf" accept=".pdf,.txt" style="display:none" onchange="lerRomaneioAbate(this)"></div></div>';
+  corpo += '<div class="form-group full" style="margin-top:12px"><label>Observações</label><textarea id="ab-obs" rows="2"></textarea></div>';
+  var rodape = '<button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-primario" onclick="salvarAbate()">Registrar Abate</button>';
+  abrirModal('Registrar Abate', corpo, rodape);
+}
+
+function carregarBaiasAbate(){
+  var cod = document.getElementById('ab-termo').value;
+  var t   = termos.find(function(t){ return t.codigo===cod; });
+  if(!t||!t.baias||!t.baias.length) return;
+  // Sugerir qtd total das baias no campo
+  var tot = t.baias.reduce(function(s,b){ return s+(b.qtd||0); },0);
+  document.getElementById('ab-qtd').value = tot;
+  calcAbate();
+}
+
+function calcAbate(){
+  var cod     = document.getElementById('ab-termo').value;
+  var t       = termos.find(function(x){ return x.codigo===cod; });
+  var dataAb  = document.getElementById('ab-data').value;
+  var qtd     = parseInt(document.getElementById('ab-qtd').value)||0;
+  var receita = parseFloat(document.getElementById('ab-receita').value)||0;
+  var funr    = parseFloat(document.getElementById('ab-funrural').value)||0;
+  var fund    = parseFloat(document.getElementById('ab-fundepec').value)||0;
+  var outros  = parseFloat(document.getElementById('ab-outros').value)||0;
+  var el = document.getElementById('ab-calculo');
+  if(!t||!dataAb||!qtd){ el.style.display='none'; return; }
+  var vl    = Number(t.valorLiquido)||0;
+  var propQ = qtd/(Number(t.qtd)||qtd); // proporção do Termo abatida
+  var caAb  = vl*propQ; // custo de aquisição proporcional
+  var dias  = diasEntre(t.dataEmissao, dataAb);
+  var taxaDia = t.taxaDia||TAXA_DIA;
+  var taxa  = Math.pow(1 + taxaDia, dias) - 1; // composto
+  var juros = caAb*taxa;
+  var custo = caAb+juros;
+  var liq   = receita-funr-fund-outros;
+  var premio= liq-custo;
+  el.style.display='block';
+  el.innerHTML =
+    '<div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;font-size:12px">'+
+    '<div><div style="color:var(--text3);font-size:10px;font-weight:600">DIAS CORRIDOS</div><div style="font-weight:700">'+dias+'d</div></div>'+
+    '<div><div style="color:var(--text3);font-size:10px;font-weight:600">TAXA PERÍODO</div><div style="font-weight:700">'+(taxa*100).toFixed(3)+'%</div></div>'+
+    '<div><div style="color:var(--text3);font-size:10px;font-weight:600">CUSTO AQUISIÇÃO</div><div style="font-weight:700">'+fmtR(caAb)+'</div></div>'+
+    '<div><div style="color:var(--text3);font-size:10px;font-weight:600">JUROS</div><div style="font-weight:700;color:var(--ouro)">'+fmtR(juros)+'</div></div>'+
+    '<div><div style="color:var(--text3);font-size:10px;font-weight:600">CUSTO TOTAL</div><div style="font-weight:700">'+fmtR(custo)+'</div></div>'+
+    '<div><div style="color:var(--text3);font-size:10px;font-weight:600">VL LÍQUIDO</div><div style="font-weight:700">'+fmtR(liq)+'</div></div>'+
+    '<div style="grid-column:1/-1;border-top:1px solid var(--borda);padding-top:8px"><div style="color:var(--text3);font-size:10px;font-weight:600">PRÊMIO ESTIMADO</div><div style="font-weight:700;font-size:16px;color:'+(premio>=0?'var(--verde2)':'var(--perigo)')+'">'+fmtR(premio)+'</div></div>'+
+    '</div>';
+  // Guardar para salvar
+  el.dataset.caAb   = caAb;
+  el.dataset.dias   = dias;
+  el.dataset.taxa   = taxa;
+  el.dataset.juros  = juros;
+  el.dataset.custo  = custo;
+  el.dataset.liq    = liq;
+  el.dataset.premio = premio;
+}
+
+function lerRomaneioAbate(input){
+  var file = input.files[0];
+  if(!file) return;
+  var reader = new FileReader();
+  reader.onload = function(e){
+    var b64 = e.target.result.split(',')[1];
+    var isPDF = file.type==='application/pdf';
+    loading('Lendo romaneio...');
+    var msg = {role:'user',content:isPDF
+      ?[{type:'document',source:{type:'base64',media_type:'application/pdf',data:b64}},
+        {type:'text',text:'Este é um romaneio de abate de gado. Extraia APENAS JSON:\n{"receitaBruta":0,"funrural":0,"fundepec":0,"adiantamento":0,"valorLiquido":0,"qtdAnimais":0,"frigorifico":"","numeroRomaneio":"","dataAbate":"DD/MM/AAAA"}\nRetorne SOMENTE o JSON.'}]
+      :'Este é um romaneio:\n\n'+atob(b64)+'\n\nExtraia JSON: {"receitaBruta":0,"funrural":0,"fundepec":0,"adiantamento":0,"valorLiquido":0,"qtdAnimais":0,"frigorifico":"","numeroRomaneio":"","dataAbate":"DD/MM/AAAA"}'
+    };
+    fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-6',max_tokens:1000,messages:[msg]})})
+    .then(function(r){ return r.json(); })
+    .then(function(d){
+      loading(false);
+      var txt=(d.content||[]).map(function(c){ return c.text||''; }).join('').replace(/```json|```/g,'').trim();
+      var dados=JSON.parse(txt);
+      if(dados.receitaBruta)    document.getElementById('ab-receita').value  = dados.receitaBruta;
+      if(dados.funrural)        document.getElementById('ab-funrural').value = dados.funrural;
+      if(dados.fundepec)        document.getElementById('ab-fundepec').value = dados.fundepec;
+      if(dados.frigorifico)     document.getElementById('ab-frig').value     = dados.frigorifico;
+      if(dados.numeroRomaneio)  document.getElementById('ab-rom').value      = dados.numeroRomaneio;
+      if(dados.qtdAnimais)      document.getElementById('ab-qtd').value      = dados.qtdAnimais;
+      calcAbate();
+      alert('✅ Romaneio importado! Revise os valores.');
+    })
+    .catch(function(){ loading(false); alert('Não foi possível ler o romaneio automaticamente.'); });
+  };
+  reader.readAsDataURL(file);
+}
+
+function salvarAbate(){
+  var cod     = document.getElementById('ab-termo').value;
+  if(!cod){ alert('Selecione o Termo.'); return; }
+  var el = document.getElementById('ab-calculo');
+  var novo = {
+    id:      Date.now(),
+    termo:   cod,
+    dataAbate: document.getElementById('ab-data').value,
+    frigorifico: document.getElementById('ab-frig').value,
+    romaneio: document.getElementById('ab-rom').value,
+    qtd:     parseInt(document.getElementById('ab-qtd').value)||0,
+    receitaBruta: parseFloat(document.getElementById('ab-receita').value)||0,
+    funrural:parseFloat(document.getElementById('ab-funrural').value)||0,
+    fundepec:parseFloat(document.getElementById('ab-fundepec').value)||0,
+    outros:  parseFloat(document.getElementById('ab-outros').value)||0,
+    caAb:    parseFloat(el.dataset.caAb||0),
+    dias:    parseInt(el.dataset.dias||0),
+    taxa:    parseFloat(el.dataset.taxa||0),
+    juros:   parseFloat(el.dataset.juros||0),
+    custo:   parseFloat(el.dataset.custo||0),
+    liq:     parseFloat(el.dataset.liq||0),
+    premio:  parseFloat(el.dataset.premio||0),
+    obs:     document.getElementById('ab-obs').value||'',
+    usuario: usuario?usuario.nome:'',
+  };
+  abates.push(novo);
+  salvarLS();
+  apiPost({acao:'salvarUm',tabela:'ABATES',registro:novo});
+  log('CRIAR','ABATES',novo.id,'termo','',novo.termo);
+  fecharModal();
+  renderAbates();
+  alert('✅ Abate registrado!');
+}
+
+function renderAbates(){
+  var fT = (document.getElementById('fAb-termo').value||'').trim().toLowerCase();
+  var fF = (document.getElementById('fAb-frig').value||'').trim().toLowerCase();
+  var fD = document.getElementById('fAb-de').value||'';
+  var fA = document.getElementById('fAb-ate').value||'';
+  var fil = abates.filter(function(a){
+    if(fT && !a.termo.toLowerCase().includes(fT)) return false;
+    if(fF && !(a.frigorifico||'').toLowerCase().includes(fF)) return false;
+    if(fD && a.dataAbate<fD) return false;
+    if(fA && a.dataAbate>fA) return false;
+    return true;
+  });
+  if(!fil.length){ document.getElementById('tbl-abates').innerHTML='<div class="sem-dados">Nenhum abate registrado.</div>'; return; }
+  var h='<table><thead><tr><th>Data</th><th>Termo</th><th>Frigorífico</th><th>Romaneio</th><th>Qtd</th><th>Dias</th><th>Custo Aq.</th><th>Juros</th><th>Custo Total</th><th>Receita Liq.</th><th>Prêmio</th><th></th></tr></thead><tbody>';
+  fil.forEach(function(a,i){
+    h+='<tr>';
+    h+='<td>'+fmtD(a.dataAbate)+'</td>';
+    h+='<td><b>'+a.termo+'</b></td>';
+    h+='<td>'+(a.frigorifico||'—')+'</td>';
+    h+='<td>'+(a.romaneio||'—')+'</td>';
+    h+='<td style="text-align:center">'+fmtN(a.qtd)+'</td>';
+    h+='<td style="text-align:center">'+a.dias+'d</td>';
+    h+='<td>'+fmtR(a.caAb)+'</td>';
+    h+='<td style="color:var(--ouro)">'+fmtR(a.juros)+'</td>';
+    h+='<td style="font-weight:600">'+fmtR(a.custo)+'</td>';
+    h+='<td>'+fmtR(a.liq)+'</td>';
+    h+='<td style="font-weight:700;color:'+(a.premio>=0?'var(--verde2)':'var(--perigo)')+'">'+fmtR(a.premio)+'</td>';
+    h+='<td><button class="btn-icone" onclick="deletarAbate('+abates.indexOf(a)+')" title="Excluir">🗑️</button></td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('tbl-abates').innerHTML = h;
+}
+function deletarAbate(idx){
+  if(!confirm('Excluir este abate?')) return;
+  abates.splice(idx,1);
+  salvarLS();
+  apiPost({acao:'salvar',tabela:'ABATES',dados:abates});
+  renderAbates();
+}
+
+// ============================================================
+// MORTES
+// ============================================================
+function abrirModalMorte(){
+  if(!termos.length){ alert('Cadastre pelo menos um Termo antes de registrar uma morte.'); return; }
+  var ops = termos.map(function(t){ return '<option value="'+t.codigo+'">'+t.codigo+'</option>'; }).join('');
+  var corpo = '<div class="form-grid">';
+  corpo += '<div class="form-group full"><label>Termo</label><select id="mo-termo"><option value="">Selecione...</option>'+ops+'</select></div>';
+  corpo += '<div class="form-group"><label>Data da Morte</label><input type="date" id="mo-data" value="'+hoje()+'"></div>';
+  corpo += '<div class="form-group"><label>Causa</label><select id="mo-causa"><option>Morte natural</option><option>Trauma</option><option>Doença</option><option>Asfixia</option><option>Intoxicação</option><option>Outra</option></select></div>';
+  corpo += '<div class="form-group full"><label>Observações</label><textarea id="mo-obs" rows="2"></textarea></div>';
+  corpo += '</div>';
+  corpo += '<div style="margin-top:12px;padding:10px;background:var(--ouro-clr);border-radius:var(--r);font-size:11px;color:var(--ouro)"><b>ℹ️ Importante:</b> A morte é registrada apenas para controle histórico. Os juros do Termo continuam correndo normalmente sobre o valor total — o animal morto será liquidado no abate do Termo.</div>';
+  var rodape = '<button class="btn btn-ghost" onclick="fecharModal()">Cancelar</button><button class="btn btn-perigo" onclick="salvarMorte()">Registrar Morte</button>';
+  abrirModal('Registrar Morte', corpo, rodape);
+}
+function salvarMorte(){
+  var cod = document.getElementById('mo-termo').value;
+  if(!cod){ alert('Selecione o Termo.'); return; }
+  var novo = {
+    id:      Date.now(),
+    termo:   cod,
+    data:    document.getElementById('mo-data').value,
+    causa:   document.getElementById('mo-causa').value,
+    obs:     document.getElementById('mo-obs').value||'',
+    usuario: usuario?usuario.nome:'',
+  };
+  mortes.push(novo);
+  salvarLS();
+  apiPost({acao:'salvarUm',tabela:'MORTES',registro:novo});
+  log('CRIAR','MORTES',novo.id,'termo','',novo.termo);
+  fecharModal();
+  renderMortes();
+  alert('✅ Morte registrada.');
+}
+function renderMortes(){
+  var fT = (document.getElementById('fM-termo').value||'').trim().toLowerCase();
+  var fD = document.getElementById('fM-de').value||'';
+  var fA = document.getElementById('fM-ate').value||'';
+  var fil = mortes.filter(function(m){
+    if(fT && !m.termo.toLowerCase().includes(fT)) return false;
+    if(fD && m.data<fD) return false;
+    if(fA && m.data>fA) return false;
+    return true;
+  });
+  if(!fil.length){ document.getElementById('tbl-mortes').innerHTML='<div class="sem-dados">Nenhuma morte registrada.</div>'; return; }
+  var porTermo = {};
+  fil.forEach(function(m){ if(!porTermo[m.termo]) porTermo[m.termo]=0; porTermo[m.termo]++; });
+  var h='<table><thead><tr><th>Data</th><th>Termo</th><th>Causa</th><th>Observações</th><th>Usuário</th><th></th></tr></thead><tbody>';
+  fil.sort(function(a,b){ return b.data.localeCompare(a.data); }).forEach(function(m){
+    h+='<tr>';
+    h+='<td>'+fmtD(m.data)+'</td>';
+    h+='<td><b>'+m.termo+'</b></td>';
+    h+='<td><span class="badge badge-perigo">'+m.causa+'</span></td>';
+    h+='<td style="color:var(--text2)">'+(m.obs||'—')+'</td>';
+    h+='<td style="color:var(--text3)">'+( m.usuario||'—')+'</td>';
+    h+='<td><button class="btn-icone" onclick="deletarMorte('+mortes.indexOf(m)+')" title="Excluir">🗑️</button></td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  h+='<div style="padding:10px 14px;background:var(--cinza);font-size:11px;color:var(--text3)">';
+  Object.keys(porTermo).forEach(function(t){ h+='<span style="margin-right:12px"><b>'+t+':</b> '+porTermo[t]+' morte(s)</span>'; });
+  h+='</div>';
+  document.getElementById('tbl-mortes').innerHTML = h;
+}
+function deletarMorte(idx){
+  if(!confirm('Excluir este registro de morte?')) return;
+  mortes.splice(idx,1);
+  salvarLS();
+  apiPost({acao:'salvar',tabela:'MORTES',dados:mortes});
+  renderMortes();
+}
+
+// ============================================================
+// FINANCEIRO
+// ============================================================
+function renderFinanceiro(){
+  var totalRec=0,totalCusto=0,totalPremio=0;
+  termos.forEach(function(t){
+    var absT = abates.filter(function(a){ return a.termo===t.codigo; });
+    absT.forEach(function(a){ totalRec+=a.liq||0; totalCusto+=a.custo||0; totalPremio+=a.premio||0; });
+  });
+  var el = document.getElementById('fin-metricas');
+  el.innerHTML =
+    metricaHtml('Receita líquida total',fmtR(totalRec),'abates realizados','verde')+
+    metricaHtml('Custo total realizado',fmtR(totalCusto),'aquisição + juros','')+
+    metricaHtml('Prêmio total',fmtR(totalPremio),'líquido de custos',totalPremio>=0?'verde':'perigo');
+
+  if(!termos.length){ document.getElementById('tbl-financeiro').innerHTML='<div class="sem-dados">Nenhum Termo cadastrado.</div>'; return; }
+  var h='<table><thead><tr><th>Termo</th><th>Emissão</th><th>Vencimento</th><th>Animais</th><th>Custo Aq.</th><th>Juros (hoje)</th><th>Custo hoje</th><th>Abatidos</th><th>Mortes</th><th>Receita</th><th>Prêmio</th><th>Status</th></tr></thead><tbody>';
+  termos.forEach(function(t){
+    var vl    = Number(t.valorLiquido)||0;
+    var j     = calcJuros(vl,t.dataEmissao);
+    var absT  = abates.filter(function(a){ return a.termo===t.codigo; });
+    var morsT = mortes.filter(function(m){ return m.termo===t.codigo; }).length;
+    var abQtd = absT.reduce(function(s,a){ return s+(a.qtd||0); },0);
+    var rec   = absT.reduce(function(s,a){ return s+(a.liq||0); },0);
+    var prem  = absT.reduce(function(s,a){ return s+(a.premio||0); },0);
+    var st    = statusTermo(t);
+    h+='<tr>';
+    h+='<td><b>'+t.codigo+'</b></td>';
+    h+='<td>'+fmtD(t.dataEmissao)+'</td>';
+    h+='<td>'+fmtD(t.vencimento)+'</td>';
+    h+='<td style="text-align:center">'+fmtN(t.qtd)+'</td>';
+    h+='<td>'+fmtR(vl)+'</td>';
+    h+='<td style="color:var(--ouro)">'+fmtR(j)+'</td>';
+    h+='<td style="font-weight:600">'+fmtR(vl+j)+'</td>';
+    h+='<td style="text-align:center">'+(abQtd>0?'<span class="badge badge-azul">'+abQtd+'</span>':'—')+'</td>';
+    h+='<td style="text-align:center">'+(morsT>0?'<span class="badge badge-perigo">'+morsT+'</span>':'—')+'</td>';
+    h+='<td style="font-weight:600;color:var(--verde2)">'+(rec>0?fmtR(rec):'—')+'</td>';
+    h+='<td style="font-weight:700;color:'+(prem>=0?'var(--verde2)':'var(--perigo)')+'">'+(rec>0?fmtR(prem):'—')+'</td>';
+    h+='<td>'+badgeStatus(st)+'</td>';
+    h+='</tr>';
+  });
+  h+='</tbody></table>';
+  document.getElementById('tbl-financeiro').innerHTML = h;
+}
+
+// ============================================================
+// LOGS
+// ============================================================
+function verLogs(){
+  var h='<table><thead><tr><th>Data</th><th>Hora</th><th>Usuário</th><th>Ação</th><th>Tabela</th><th>ID</th><th>Campo</th><th>Anterior</th><th>Novo</th></tr></thead><tbody>';
+  var rev = logs.slice().reverse().slice(0,100);
+  if(!rev.length) h='<div class="sem-dados">Nenhum log registrado.</div>';
+  else rev.forEach(function(l){
+    h+='<tr><td>'+fmtD(l.data)+'</td><td>'+l.hora+'</td><td>'+l.usuario+'</td><td><span class="badge badge-cinza">'+l.acao+'</span></td><td>'+l.tabela+'</td><td>'+l.idReg+'</td><td>'+(l.campo||'—')+'</td><td>'+(l.ant||'—')+'</td><td>'+(l.novo||'—')+'</td></tr>';
+  });
+  if(rev.length) h+='</tbody></table>';
+  abrirModal('Logs do Sistema', h, '<button class="btn btn-ghost" onclick="fecharModal()">Fechar</button>');
+}
+
+// ============================================================
+// EXPORTAR CSV
+// ============================================================
+function csvDownload(linhas, nome){
+  var blob = new Blob(['\uFEFF'+linhas.join('\n')], {type:'text/csv;charset=utf-8;'});
+  var a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = nome+'_'+hoje()+'.csv';
+  a.click();
+  URL.revokeObjectURL(a.href);
+}
+function exportarTermosCSV(){
+  var cab = ['Termo;Emissão;Vencimento;Qtd;Vlr/Cb;Vlr Líquido;Vlr Nominal;Custeio;Dias;Juros;Custo Total;Status'];
+  var rows = termos.map(function(t){
+    var j=calcJuros(Number(t.valorLiquido)||0,t.dataEmissao);
+    return [t.codigo,fmtD(t.dataEmissao),fmtD(t.vencimento),t.qtd,t.valorCabeca,t.valorLiquido,t.valorNominal,t.custeio,diasEntre(t.dataEmissao),j.toFixed(2),(Number(t.valorLiquido)+j).toFixed(2),statusTermo(t)].join(';');
+  });
+  csvDownload(cab.concat(rows),'Termos_CERES');
+}
+function exportarPrevisoesCSV(){
+  var cab=['Termo;Animais;Emissão;Vencimento;Dias;Vlr Líquido;Juros Hoje;Custo Hoje;Juros Venc;Custo Venc'];
+  var rows=termos.filter(function(t){ return statusTermo(t)!=='encerrado'; }).map(function(t){
+    var vl=Number(t.valorLiquido)||0;
+    var jH=calcJuros(vl,t.dataEmissao);
+    var jV=calcJuros(vl,t.dataEmissao,t.vencimento>hoje()?t.vencimento:hoje());
+    return [t.codigo,t.qtd,fmtD(t.dataEmissao),fmtD(t.vencimento),diasEntre(t.dataEmissao),vl.toFixed(2),jH.toFixed(2),(vl+jH).toFixed(2),jV.toFixed(2),(vl+jV).toFixed(2)].join(';');
+  });
+  csvDownload(cab.concat(rows),'Previsoes_CERES');
+}
+function exportarAbatesCSV(){
+  var cab=['Data;Termo;Frigorífico;Romaneio;Qtd;Dias;CA;Juros;Custo;Receita Liq;Prêmio'];
+  var rows=abates.map(function(a){ return [fmtD(a.dataAbate),a.termo,a.frigorifico,a.romaneio,a.qtd,a.dias,a.caAb.toFixed(2),a.juros.toFixed(2),a.custo.toFixed(2),a.liq.toFixed(2),a.premio.toFixed(2)].join(';'); });
+  csvDownload(cab.concat(rows),'Abates_CERES');
+}
+function exportarMortesCSV(){
+  var cab=['Data;Termo;Causa;Observações;Usuário'];
+  var rows=mortes.map(function(m){ return [fmtD(m.data),m.termo,m.causa,m.obs,m.usuario].join(';'); });
+  csvDownload(cab.concat(rows),'Mortes_CERES');
+}
+function exportarFinanceiroCSV(){
+  var cab=['Termo;Emissão;Vencimento;Animais;CA;Juros;Custo;Abatidos;Mortes;Receita;Prêmio;Status'];
+  var rows=termos.map(function(t){
+    var vl=Number(t.valorLiquido)||0,j=calcJuros(vl,t.dataEmissao);
+    var absT=abates.filter(function(a){ return a.termo===t.codigo; });
+    var rec=absT.reduce(function(s,a){ return s+a.liq; },0);
+    var prem=absT.reduce(function(s,a){ return s+a.premio; },0);
+    return [t.codigo,fmtD(t.dataEmissao),fmtD(t.vencimento),t.qtd,vl.toFixed(2),j.toFixed(2),(vl+j).toFixed(2),absT.reduce(function(s,a){ return s+a.qtd; },0),mortes.filter(function(m){ return m.termo===t.codigo; }).length,rec.toFixed(2),prem.toFixed(2),statusTermo(t)].join(';');
+  });
+  csvDownload(cab.concat(rows),'Financeiro_CERES');
+}
+
+// ============================================================
+// INIT
+// ============================================================
+window.onload = function(){};
+function importarTodosTermos(){
+  var dados = [{"codigo": "JF012026-1", "dataEmissao": "2026-05-20", "vencimento": "2026-10-17", "qtd": 148, "valorCabeca": 4593.98, "valorLiquido": 679909.22, "valorNominal": 753362.02, "custeio": 1.95, "id": "termo_JF012026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF022026-1", "dataEmissao": "2026-05-21", "vencimento": "2026-10-18", "qtd": 1006, "valorCabeca": 4513.73, "valorLiquido": 4540813.54, "valorNominal": 5031372.34, "custeio": 1.95, "id": "termo_JF022026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF032026-1", "dataEmissao": "2026-05-22", "vencimento": "2026-10-19", "qtd": 138, "valorCabeca": 4434.55, "valorLiquido": 611967.4, "valorNominal": 674007.05, "custeio": 1.95, "id": "termo_JF032026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF042026-1", "dataEmissao": "2026-05-25", "vencimento": "2026-10-22", "qtd": 308, "valorCabeca": 5000.0, "valorLiquido": 1540000.0, "valorNominal": 1696121.16, "custeio": 1.95, "id": "termo_JF042026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF052026-1", "dataEmissao": "2026-05-26", "vencimento": "2026-10-23", "qtd": 1502, "valorCabeca": 4078.61, "valorLiquido": 6126069.74, "valorNominal": 6747114.61, "custeio": 1.95, "id": "termo_JF052026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF062026-1", "dataEmissao": "2026-05-26", "vencimento": "2026-10-23", "qtd": 540, "valorCabeca": 4765.33, "valorLiquido": 2573276.04, "valorNominal": 2834148.01, "custeio": 1.95, "id": "termo_JF062026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF072026-1", "dataEmissao": "2026-05-27", "vencimento": "2026-10-24", "qtd": 286, "valorCabeca": 4963.36, "valorLiquido": 1419519.71, "valorNominal": 1563426.89, "custeio": 1.95, "id": "termo_JF072026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF082026-1", "dataEmissao": "2026-06-03", "vencimento": "2026-10-31", "qtd": 70, "valorCabeca": 4825.33, "valorLiquido": 337773.31, "valorNominal": 372015.88, "custeio": 1.95, "id": "termo_JF082026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF092026-1", "dataEmissao": "2026-06-30", "vencimento": "2026-11-27", "qtd": 1269, "valorCabeca": 5086.82, "valorLiquido": 6455176.7, "valorNominal": 7109585.57, "custeio": 1.95, "id": "termo_JF092026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF102026-1", "dataEmissao": "2026-07-01", "vencimento": "2026-11-28", "qtd": 540, "valorCabeca": 5067.96, "valorLiquido": 2736699.76, "valorNominal": 3014139.2, "custeio": 1.95, "id": "termo_JF102026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF112026-1", "dataEmissao": "2026-07-06", "vencimento": "2026-12-03", "qtd": 861, "valorCabeca": 5409.43, "valorLiquido": 4657520.7, "valorNominal": 5129687.92, "custeio": 1.95, "id": "termo_JF112026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF122026-1", "dataEmissao": "2026-07-07", "vencimento": "2026-12-04", "qtd": 906, "valorCabeca": 4299.59, "valorLiquido": 3895427.08, "valorNominal": 4290335.25, "custeio": 1.95, "id": "termo_JF122026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF132026-1", "dataEmissao": "2026-07-09", "vencimento": "", "qtd": 0, "valorCabeca": 0, "valorLiquido": 0, "valorNominal": 0, "custeio": 1.95, "id": "termo_JF132026-1", "taxaDia": 0.00065, "obs": "⚠️ Completar: vencimento, qtd e valores (PDF sem dados extraíveis)", "baias": []}, {"codigo": "JF142026-1", "dataEmissao": "2026-07-10", "vencimento": "2026-12-07", "qtd": 447, "valorCabeca": 4730.66, "valorLiquido": 2114604.84, "valorNominal": 2328977.93, "custeio": 1.95, "id": "termo_JF142026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF152026-1", "dataEmissao": "2026-07-13", "vencimento": "2026-12-10", "qtd": 565, "valorCabeca": 5024.22, "valorLiquido": 2838682.39, "valorNominal": 3126460.56, "custeio": 1.95, "id": "termo_JF152026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF162026-1", "dataEmissao": "2026-07-14", "vencimento": "2026-12-11", "qtd": 225, "valorCabeca": 5237.5, "valorLiquido": 1178438.5, "valorNominal": 1297905.5, "custeio": 1.95, "id": "termo_JF162026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF172026-1", "dataEmissao": "2026-07-15", "vencimento": "2026-12-12", "qtd": 136, "valorCabeca": 5142.12, "valorLiquido": 699328.06, "valorNominal": 770224.1, "custeio": 1.95, "id": "termo_JF172026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF182026-1", "dataEmissao": "2026-07-17", "vencimento": "2026-12-14", "qtd": 303, "valorCabeca": 5128.13, "valorLiquido": 1553823.66, "valorNominal": 1711346.22, "custeio": 1.95, "id": "termo_JF182026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF192026-1", "dataEmissao": "2026-07-23", "vencimento": "2026-12-20", "qtd": 427, "valorCabeca": 5200.42, "valorLiquido": 2220578.48, "valorNominal": 2445694.9, "custeio": 1.95, "id": "termo_JF192026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF202026-1", "dataEmissao": "2026-08-04", "vencimento": "2026-12-01", "qtd": 302, "valorCabeca": 4938.1, "valorLiquido": 1491306.54, "valorNominal": 1610038.53, "custeio": 1.95, "id": "termo_JF202026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF212026-1", "dataEmissao": "2026-08-07", "vencimento": "2027-01-04", "qtd": 214, "valorCabeca": 5253.63, "valorLiquido": 1124277.26, "valorNominal": 1238253.54, "custeio": 1.95, "id": "termo_JF212026-1", "taxaDia": 0.00065, "obs": "", "baias": []}, {"codigo": "JF222026-1", "dataEmissao": "2026-08-12", "vencimento": "2027-01-09", "qtd": 469, "valorCabeca": 5244.71, "valorLiquido": 2459770.12, "valorNominal": 2709135.16, "custeio": 1.95, "id": "termo_JF222026-1", "taxaDia": 0.00065, "obs": "", "baias": []}];
+  var novos = 0, existentes = 0;
+  dados.forEach(function(t){
+    if(termos.find(function(x){ return x.codigo===t.codigo; })){ existentes++; return; }
+    termos.push(t);
+    novos++;
+  });
+  salvarLS();
+  apiPost({acao:'salvar',tabela:'TERMOS',dados:termos});
+  renderTermos();
+  alert('\u2705 Importa\u00e7\u00e3o conclu\u00edda!\n\n' + novos + ' termos importados\n' + existentes + ' j\u00e1 existiam\n\n\u26a0\ufe0f JF132026-1 precisa ser completado manualmente.');
+}
+
+</script>
+</body>
+</html>

@@ -256,7 +256,7 @@ function buscaM(i){
   var t=termos[i];var nfs=t.nfs||[];
   if(!nfs.length){alert("Salve as NFs primeiro.");return;}
   load("Buscando no MANEJO...");
-  fetch("https://sheets.googleapis.com/v4/spreadsheets/"+SID+"/values/"+encodeURIComponent("Manejo ceres!A:L")+"?key="+KEY)
+  fetch("https://sheets.googleapis.com/v4/spreadsheets/"+SID+"/values/"+encodeURIComponent("Manejo ceres!A:O")+"?key="+KEY)
   .then(function(r){return r.json();})
   .then(function(d){
     load(false);
@@ -275,7 +275,7 @@ function buscaM(i){
 
 function buscarManejo(){
   load("Buscando MANEJO...");
-  fetch("https://sheets.googleapis.com/v4/spreadsheets/"+SID+"/values/"+encodeURIComponent("Manejo ceres!A:L")+"?key="+KEY)
+  fetch("https://sheets.googleapis.com/v4/spreadsheets/"+SID+"/values/"+encodeURIComponent("Manejo ceres!A:O")+"?key="+KEY)
   .then(function(r){return r.json();})
   .then(function(d){
     load(false);

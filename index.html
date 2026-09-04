@@ -1,0 +1,704 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Operação CERES 2.0</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --v:#1B4D2E;--v2:#2E7D4F;--vc:#E8F5E9;
+  --o:#B8860B;--o2:#DAA520;--oc:#FFF8E1;
+  --c:#F4F6F4;--c2:#E8ECE8;
+  --t:#1A2A1A;--t2:#4A5E4A;--t3:#7A8E7A;
+  --bd:#D0DAD0;--p:#C62828;--pc:#FFEBEE;
+  --a:#1565C0;--ac:#E3F2FD;
+  --f:"Segoe UI",system-ui,sans-serif;--r:8px;
+}
+body{font-family:var(--f);background:var(--c);color:var(--t);font-size:13px;display:flex;min-height:100vh}
+#login{position:fixed;inset:0;background:var(--v);z-index:999;display:flex;align-items:center;justify-content:center}
+.lbox{background:#fff;border-radius:16px;padding:36px;width:340px;text-align:center}
+.lmarca{font-size:26px;font-weight:800;color:var(--v);margin-bottom:4px}
+.lsub{font-size:11px;color:var(--t3);margin-bottom:28px}
+.lgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.lbtn{padding:14px 10px;border:1.5px solid var(--bd);border-radius:var(--r);cursor:pointer;background:#fff;font-size:12px;font-weight:600;color:var(--t);display:flex;flex-direction:column;align-items:center;gap:6px;transition:.15s}
+.lbtn:hover{border-color:var(--v2);background:var(--vc);color:var(--v2)}
+.avt{width:38px;height:38px;border-radius:50%;background:var(--v2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;font-weight:700}
+#sb{width:210px;min-height:100vh;background:var(--v);position:fixed;top:0;left:0;bottom:0;display:flex;flex-direction:column;z-index:100}
+.sb-logo{padding:18px 16px 14px;border-bottom:1px solid rgba(255,255,255,.12)}
+.sb-marca{font-size:17px;font-weight:800;color:#fff}
+.sb-sub{font-size:9px;color:rgba(255,255,255,.45);letter-spacing:.6px;margin-top:2px}
+.sb-user{padding:11px 14px;border-bottom:1px solid rgba(255,255,255,.1);display:flex;align-items:center;gap:9px}
+.sb-av{width:32px;height:32px;border-radius:50%;background:var(--o2);color:#fff;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;flex-shrink:0}
+.sb-nome{font-size:12px;font-weight:600;color:#fff}
+#nav{flex:1;padding:8px 0;overflow-y:auto}
+.ns{font-size:9px;font-weight:600;color:rgba(255,255,255,.3);letter-spacing:.7px;padding:12px 16px 4px;text-transform:uppercase}
+.ni{display:flex;align-items:center;gap:9px;padding:9px 16px;cursor:pointer;color:rgba(255,255,255,.65);font-size:12px;font-weight:500;border-left:3px solid transparent;transition:.12s}
+.ni:hover{background:rgba(255,255,255,.08);color:#fff}
+.ni.on{background:rgba(255,255,255,.13);color:#fff;border-left-color:var(--o2)}
+.ni .ic{font-size:15px;width:18px;text-align:center}
+.sb-bot{padding:12px 14px;border-top:1px solid rgba(255,255,255,.1)}
+.btsair{width:100%;padding:7px;background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.15);border-radius:var(--r);color:rgba(255,255,255,.65);cursor:pointer;font-size:11px}
+#main{margin-left:210px;flex:1;display:flex;flex-direction:column}
+#topbar{background:#fff;border-bottom:1px solid var(--bd);padding:13px 22px;display:flex;align-items:center;justify-content:space-between}
+.tb-t{font-size:15px;font-weight:600}.tb-s{font-size:11px;color:var(--t3);margin-top:1px}
+#content{padding:18px 22px;flex:1}
+.tela{display:none}.tela.on{display:block}
+.metrics{display:grid;grid-template-columns:repeat(auto-fit,minmax(148px,1fr));gap:10px;margin-bottom:18px}
+.mc{background:#fff;border-radius:12px;padding:14px;border:1px solid var(--bd)}
+.mc .lb{font-size:9.5px;color:var(--t3);font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:5px}
+.mc .vl{font-size:20px;font-weight:700}
+.mc .s2{font-size:9.5px;color:var(--t3);margin-top:2px}
+.mc.verde .vl{color:var(--v2)}.mc.ouro .vl{color:var(--o)}.mc.red .vl{color:var(--p)}
+.card{background:#fff;border-radius:12px;border:1px solid var(--bd);overflow:hidden;margin-bottom:14px}
+.ch{padding:13px 16px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between;gap:8px;flex-wrap:wrap}
+.ch h3{font-size:13px;font-weight:600}
+.tw{overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:12px}
+th{padding:8px 11px;text-align:left;font-weight:600;color:var(--t2);background:var(--c);border-bottom:1px solid var(--bd);white-space:nowrap}
+td{padding:8px 11px;border-bottom:1px solid var(--c2);vertical-align:middle}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--c)}
+.vazio{padding:28px;text-align:center;color:var(--t3);font-size:12px}
+.bg{display:inline-block;padding:2px 9px;border-radius:20px;font-size:10px;font-weight:600;white-space:nowrap}
+.bg-v{background:var(--vc);color:var(--v2)}.bg-o{background:var(--oc);color:var(--o)}
+.bg-p{background:var(--pc);color:var(--p)}.bg-a{background:var(--ac);color:var(--a)}.bg-c{background:var(--c2);color:var(--t2)}
+.btn{padding:7px 14px;border-radius:var(--r);font-size:12px;font-weight:600;cursor:pointer;border:1px solid transparent;display:inline-flex;align-items:center;gap:5px;white-space:nowrap;transition:.12s}
+.btn-v{background:var(--v2);color:#fff}.btn-v:hover{background:var(--v)}
+.btn-o{background:var(--o2);color:#fff}
+.btn-g{background:transparent;color:var(--t2);border:1px solid var(--bd)}.btn-g:hover{background:var(--c)}
+.btn-p{background:var(--pc);color:var(--p);border:1px solid var(--p)}.btn-p:hover{background:var(--p);color:#fff}
+.btn-sm{padding:4px 9px;font-size:11px}
+.bic{background:transparent;border:none;cursor:pointer;color:var(--t3);padding:3px;border-radius:4px}
+.bic:hover{color:var(--t);background:var(--c)}
+.fg{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px}
+.fi{display:flex;flex-direction:column;gap:3px}.fi.full{grid-column:1/-1}
+label{font-size:10.5px;font-weight:600;color:var(--t2)}
+input,select,textarea{padding:7px 9px;border:1px solid var(--bd);border-radius:var(--r);font-size:12px;font-family:var(--f);color:var(--t);background:#fff;width:100%;transition:.12s}
+input:focus,select:focus,textarea:focus{outline:none;border-color:var(--v2)}
+textarea{resize:vertical;min-height:60px}
+#ov{position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:500;display:none;align-items:center;justify-content:center;padding:16px}
+#ov.on{display:flex}
+.modal{background:#fff;border-radius:14px;width:100%;max-width:620px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.18)}
+.mh{padding:16px 18px;border-bottom:1px solid var(--bd);display:flex;align-items:center;justify-content:space-between}
+.mh h3{font-size:14px;font-weight:700}.mb{padding:18px}.mf{padding:12px 18px;border-top:1px solid var(--bd);display:flex;gap:8px;justify-content:flex-end}
+#ld{position:fixed;inset:0;background:rgba(255,255,255,.8);z-index:900;display:none;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+#ld.on{display:flex}
+.sp{width:32px;height:32px;border:3px solid var(--c2);border-top-color:var(--v2);border-radius:50%;animation:spin .7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+#ldm{font-size:12px;color:var(--t2);font-weight:500}
+.filtros{background:#fff;border:1px solid var(--bd);border-radius:12px;padding:12px;margin-bottom:14px;display:flex;gap:8px;flex-wrap:wrap;align-items:flex-end}
+.ff{display:flex;flex-direction:column;gap:2px;min-width:110px}
+.ff label{font-size:9.5px;font-weight:600;color:var(--t3);text-transform:uppercase;letter-spacing:.4px}
+.ff input,.ff select{padding:5px 7px;font-size:12px}
+.infobox{background:var(--oc);border-radius:var(--r);padding:10px 12px;font-size:11px;color:var(--o);margin-top:10px}
+</style>
+</head>
+<body>
+
+<div id="login">
+  <div class="lbox">
+    <div class="lmarca">CERES 2.0</div>
+    <div class="lsub">Operacao Confinamento · 3M Agropecuaria</div>
+    <div class="lgrid">
+      <button class="lbtn" onclick="entrar('Natalia Fonseca','NF')"><div class="avt">NF</div>Natalia</button>
+      <button class="lbtn" onclick="entrar('Ana Carolina','AC')"><div class="avt">AC</div>Ana Carolina</button>
+      <button class="lbtn" onclick="entrar('Heitor','HE')"><div class="avt">HE</div>Heitor</button>
+      <button class="lbtn" onclick="entrar('Rosielli','RO')"><div class="avt">RO</div>Rosielli</button>
+    </div>
+  </div>
+</div>
+
+<div id="ld"><div class="sp"></div><div id="ldm">Carregando...</div></div>
+
+<div id="ov" onclick="if(event.target===this)fModal()">
+  <div class="modal">
+    <div class="mh"><h3 id="mt">-</h3><button class="bic" onclick="fModal()">&#x2715;</button></div>
+    <div class="mb" id="mc"></div>
+    <div class="mf" id="mf"></div>
+  </div>
+</div>
+
+<nav id="sb">
+  <div class="sb-logo"><div class="sb-marca">CERES 2.0</div><div class="sb-sub">3M AGROPECUARIA</div></div>
+  <div class="sb-user"><div class="sb-av" id="av">NF</div><div><div class="sb-nome" id="unome">-</div></div></div>
+  <div id="nav">
+    <div class="ns">Analises</div>
+    <div class="ni on" onclick="ir('dash')"><span class="ic">&#128202;</span>Dashboard</div>
+    <div class="ns">Operacao</div>
+    <div class="ni" onclick="ir('termos')"><span class="ic">&#128196;</span>Termos</div>
+    <div class="ni" onclick="ir('animais')"><span class="ic">&#128004;</span>Animais</div>
+    <div class="ni" onclick="ir('previsoes')"><span class="ic">&#128200;</span>Previsoes</div>
+    <div class="ni" onclick="ir('abates')"><span class="ic">&#128298;</span>Abates</div>
+    <div class="ni" onclick="ir('mortes')"><span class="ic">&#9888;</span>Mortes</div>
+    <div class="ns">Financeiro</div>
+    <div class="ni" onclick="ir('fin')"><span class="ic">&#128176;</span>Financeiro</div>
+    <div class="ns">Sistema</div>
+    <div class="ni" onclick="sincronizar()"><span class="ic">&#128260;</span>Sincronizar</div>
+  </div>
+  <div class="sb-bot"><button class="btsair" onclick="sair()">Sair</button></div>
+</nav>
+
+<main id="main">
+  <div id="topbar">
+    <div><div class="tb-t" id="tbt">Dashboard</div><div class="tb-s" id="tbs">Visao geral</div></div>
+    <div id="tba"></div>
+  </div>
+  <div id="content">
+
+    <div id="tela-dash" class="tela on">
+      <div class="metrics" id="d-met"></div>
+      <div class="card"><div class="ch"><h3>Termos em aberto</h3><button class="btn btn-g btn-sm" onclick="atualizarTudo()">&#128260; Atualizar do CERES 2026</button></div><div class="tw" id="d-tab"></div></div>
+    </div>
+
+    <div id="tela-termos" class="tela">
+      <div class="card">
+        <div class="ch">
+          <h3>Termos de Parceria</h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-o btn-sm" onclick="importarTermos()">&#128229; Importar 22 Termos</button>
+            <button class="btn btn-v btn-sm" onclick="novoTermo()">+ Novo</button>
+            <button class="btn btn-g btn-sm" onclick="expTermos()">&#128229; Excel</button>
+          </div>
+        </div>
+        <div class="filtros">
+          <div class="ff"><label>Codigo</label><input id="ft-c" oninput="rTermos()" placeholder="JF012026-1"></div>
+          <div class="ff"><label>Status</label><select id="ft-s" onchange="rTermos()"><option value="">Todos</option><option value="ativo">Ativo</option><option value="parcial">Parcial</option><option value="vencido">Vencido</option><option value="encerrado">Encerrado</option></select></div>
+        </div>
+        <div class="tw" id="t-tab"></div>
+      </div>
+    </div>
+
+    <div id="tela-animais" class="tela">
+      <div class="card">
+        <div class="ch"><h3>Animais — MANEJO CERES 2026</h3><button class="btn btn-v btn-sm" onclick="carregarManejo()">&#128260; Carregar do MANEJO</button></div>
+        <div class="filtros">
+          <div class="ff"><label>Termo Saida (col O)</label><input id="fa-ts" oninput="rAnimais()" placeholder="JF052026"></div>
+          <div class="ff"><label>Baia</label><input id="fa-b" oninput="rAnimais()" placeholder="M-8"></div>
+          <div class="ff"><label>NF</label><input id="fa-n" oninput="rAnimais()" placeholder="5398"></div>
+          <div class="ff"><label>Embarque</label><select id="fa-emb" onchange="rAnimais()"><option value="">Todos</option><option value="sim">Embarcados</option><option value="nao">Pendentes</option></select></div>
+        </div>
+        <div class="tw" id="a-tab"></div>
+      </div>
+    </div>
+
+    <div id="tela-previsoes" class="tela">
+      <div class="metrics" id="p-met"></div>
+      <div class="card">
+        <div class="ch"><h3>Previsao por Termo</h3><button class="btn btn-g btn-sm" onclick="expPrev()">&#128229; Excel</button></div>
+        <div class="filtros">
+          <div class="ff"><label>Termo</label><input id="fp-t" oninput="rPrev()" placeholder="JF012026-1"></div>
+          <div class="ff"><label>Status</label><select id="fp-s" onchange="rPrev()"><option value="">Todos</option><option value="ativo">Ativo</option><option value="vencido">Vencido</option></select></div>
+        </div>
+        <div class="tw" id="p-tab"></div>
+      </div>
+    </div>
+
+    <div id="tela-abates" class="tela">
+      <div class="card">
+        <div class="ch">
+          <h3>Abates / Embarques — TERMOSEMBARQUES</h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-v btn-sm" onclick="carregarEmbarques()">&#128260; Carregar do CERES 2026</button>
+            <button class="btn btn-g btn-sm" onclick="expAbates()">&#128229; Excel</button>
+          </div>
+        </div>
+        <div class="filtros">
+          <div class="ff"><label>Termo</label><input id="fab-t" oninput="rAbates()" placeholder="JF052026"></div>
+          <div class="ff"><label>Frigorifico</label><input id="fab-f" oninput="rAbates()" placeholder="JBS"></div>
+          <div class="ff"><label>De</label><input type="date" id="fab-d" onchange="rAbates()"></div>
+          <div class="ff"><label>Ate</label><input type="date" id="fab-a" onchange="rAbates()"></div>
+        </div>
+        <div class="tw" id="ab-tab"></div>
+      </div>
+    </div>
+
+    <div id="tela-mortes" class="tela">
+      <div class="card">
+        <div class="ch">
+          <h3>Mortes</h3>
+          <div style="display:flex;gap:6px;flex-wrap:wrap">
+            <button class="btn btn-v btn-sm" onclick="carregarMortes()">&#128260; Carregar do CERES 2026</button>
+            <button class="btn btn-p btn-sm" onclick="novaMorte()">+ Registrar</button>
+            <button class="btn btn-g btn-sm" onclick="expMortes()">&#128229; Excel</button>
+          </div>
+        </div>
+        <div class="filtros">
+          <div class="ff"><label>Termo Saida</label><input id="fm-ts" oninput="rMortes()" placeholder="JF052026"></div>
+          <div class="ff"><label>Baia</label><input id="fm-b" oninput="rMortes()" placeholder="M-5"></div>
+          <div class="ff"><label>De</label><input type="date" id="fm-d" onchange="rMortes()"></div>
+          <div class="ff"><label>Ate</label><input type="date" id="fm-a" onchange="rMortes()"></div>
+        </div>
+        <div class="tw" id="m-tab"></div>
+      </div>
+    </div>
+
+    <div id="tela-fin" class="tela">
+      <div class="metrics" id="f-met"></div>
+      <div class="card"><div class="ch"><h3>Financeiro por Termo</h3><button class="btn btn-g btn-sm" onclick="expFin()">&#128229; Excel</button></div><div class="tw" id="f-tab"></div></div>
+    </div>
+
+  </div>
+</main>
+
+<script>
+var WEB_APP = "https://script.google.com/macros/s/AKfycbwGd8BMGSkLNA_IghsgcYi6Bx6NNMjFo_GrrbFn-BqyWB4fZA_quU2XBxQKMaIRfQZP/exec";
+var SID = "1yApyTaf4i7SGxy3cR6E1GPGsBzdNXQKhwfNaBoEMg2g";
+var KEY = "AIzaSyDGuUvLZxh8Hho5SudZgNRGkb5_HuTyfWw";
+var TAXA = 0.00065;
+var usr = null, termos = [], animais = [], abates = [], mortes = [];
+
+function fR(n){return "R$ "+Number(n||0).toLocaleString("pt-BR",{minimumFractionDigits:2,maximumFractionDigits:2});}
+function fN(n){return Number(n||0).toLocaleString("pt-BR");}
+function fD(s){if(!s||s==="--")return"--";s=String(s).split("T")[0];var p=s.split("-");if(p.length===3&&p[0].length===4)return p[2]+"/"+p[1]+"/"+p[0].slice(2);return s;}
+function parseData(v){
+  if(!v)return "";
+  var s=String(v).trim();
+  if(s.includes("T"))return s.split("T")[0];
+  if(/^\d{4}-\d{2}-\d{2}/.test(s))return s.slice(0,10);
+  // serial Excel
+  var n=parseFloat(s);
+  if(!isNaN(n)&&n>40000&&n<50000){var d=new Date((n-25569)*86400000);return d.toISOString().split("T")[0];}
+  return s;
+}
+function hj(){return new Date().toISOString().split("T")[0];}
+function dias(d1,d2){if(!d1)return 0;return Math.max(0,Math.ceil((new Date(d2||hj())-new Date(d1))/86400000));}
+function juros(vl,em,ate){if(!em||!vl)return 0;return vl*(Math.pow(1+TAXA,dias(em,ate))-1);}
+function normalTermo(cod){
+  // JF052026 ou JF052026-1 -> JF052026-1
+  if(!cod)return "";
+  cod=String(cod).trim();
+  return cod.endsWith("-1")?cod:cod+"-1";
+}
+function semSufixo(cod){return String(cod||"").replace("-1","");}
+function stT(t){
+  var cod=t.codigo; var codS=semSufixo(cod);
+  var qtdEmb=abates.filter(function(a){return a.termoSaida===codS||a.termoSaida===cod||a.termo===cod;}).reduce(function(s,a){return s+(+a.qtd||0);},0);
+  if(qtdEmb>=(t.qtd||1)&&qtdEmb>0)return "encerrado";
+  if(hj()>(t.vencimento||""))return "vencido";
+  if(qtdEmb>0)return "parcial";
+  return "ativo";
+}
+function bgSt(s){return{ativo:"bg-v",parcial:"bg-a",vencido:"bg-p",encerrado:"bg-c"}[s]||"bg-c";}
+function txSt(s){return{ativo:"Ativo",parcial:"Parcial",vencido:"Vencido",encerrado:"Encerrado"}[s]||s;}
+function mc(l,v,s,c){return '<div class="mc '+(c||'')+'"><div class="lb">'+l+'</div><div class="vl">'+v+'</div>'+(s?'<div class="s2">'+s+'</div>':'')+'</div>';}
+
+function load(m){var e=document.getElementById("ld");if(m){e.classList.add("on");document.getElementById("ldm").textContent=m||"...";}else e.classList.remove("on");}
+function aModal(t,c,f){document.getElementById("mt").textContent=t;document.getElementById("mc").innerHTML=c;document.getElementById("mf").innerHTML=f||"";document.getElementById("ov").classList.add("on");}
+function fModal(){document.getElementById("ov").classList.remove("on");}
+function lsSave(){localStorage.setItem("c2t",JSON.stringify(termos));localStorage.setItem("c2ab",JSON.stringify(abates));localStorage.setItem("c2m",JSON.stringify(mortes));localStorage.setItem("c2an",JSON.stringify(animais));}
+function lsLoad(){termos=JSON.parse(localStorage.getItem("c2t")||"[]");abates=JSON.parse(localStorage.getItem("c2ab")||"[]");mortes=JSON.parse(localStorage.getItem("c2m")||"[]");animais=JSON.parse(localStorage.getItem("c2an")||"[]");}
+function sheets(aba,range){
+  return fetch("https://sheets.googleapis.com/v4/spreadsheets/"+SID+"/values/"+encodeURIComponent(aba+"!"+range)+"?key="+KEY)
+    .then(function(r){return r.json();}).then(function(d){return d.values||[];});
+}
+function apiGet(tab){return fetch(WEB_APP+"?acao=ler&tabela="+tab+"&t="+Date.now()).then(function(r){return r.json();}).then(function(j){return j.registros||[];}).catch(function(){return[];});}
+function apiPost(p){return fetch(WEB_APP,{method:"POST",body:JSON.stringify(p)}).catch(function(){});}
+
+function entrar(nome,ini){
+  usr={nome:nome,ini:ini};
+  document.getElementById("unome").textContent=nome;
+  document.getElementById("av").textContent=ini;
+  document.getElementById("login").style.display="none";
+  lsLoad(); render(); setTimeout(bgSync,400);
+}
+function sair(){document.getElementById("login").style.display="flex";}
+
+function bgSync(){
+  Promise.all([apiGet("TERMOS"),apiGet("ABATES"),apiGet("MORTES"),apiGet("ANIMAIS")])
+  .then(function(r){
+    if(r[0]&&r[0].length){termos=r[0];localStorage.setItem("c2t",JSON.stringify(termos));}
+    if(r[1]&&r[1].length){abates=r[1];localStorage.setItem("c2ab",JSON.stringify(abates));}
+    if(r[2]&&r[2].length){mortes=r[2];localStorage.setItem("c2m",JSON.stringify(mortes));}
+    if(r[3]&&r[3].length){animais=r[3];localStorage.setItem("c2an",JSON.stringify(animais));}
+    render();
+  }).catch(function(){});
+}
+
+function sincronizar(){
+  load("Sincronizando...");
+  Promise.all([
+    apiPost({acao:"salvar",tabela:"TERMOS",dados:termos}),
+    apiPost({acao:"salvar",tabela:"ABATES",dados:abates}),
+    apiPost({acao:"salvar",tabela:"MORTES",dados:mortes}),
+    apiPost({acao:"salvar",tabela:"ANIMAIS",dados:animais})
+  ]).then(function(){load(false);alert("Sincronizado!");}).catch(function(){load(false);alert("Erro.");});
+}
+
+function atualizarTudo(){
+  load("Atualizando do CERES 2026...");
+  carregarManejo(true)
+  .then(function(){return carregarEmbarques(true);})
+  .then(function(){return carregarMortes(true);})
+  .then(function(){load(false);render();alert("Atualizado!");})
+  .catch(function(){load(false);alert("Erro ao atualizar.");});
+}
+
+var _t="dash";
+var _info={dash:["Dashboard","Visao geral"],termos:["Termos","Termos de Parceria"],animais:["Animais","Plantel — MANEJO CERES 2026"],previsoes:["Previsoes","Custo e juros por Termo"],abates:["Abates","Embarques — TERMOSEMBARQUES"],mortes:["Mortes","Registro de mortes"],fin:["Financeiro","Controle financeiro por Termo"]};
+function ir(tela){
+  document.querySelectorAll(".tela").forEach(function(e){e.classList.remove("on");});
+  document.querySelectorAll(".ni").forEach(function(e){e.classList.remove("on");});
+  var el=document.getElementById("tela-"+tela); if(el)el.classList.add("on");
+  document.querySelectorAll(".ni").forEach(function(e){if((e.getAttribute("onclick")||"").indexOf("'"+tela+"'")>=0)e.classList.add("on");});
+  var info=_info[tela]||[tela,""];
+  document.getElementById("tbt").textContent=info[0];
+  document.getElementById("tbs").textContent=info[1];
+  _t=tela; render();
+}
+function render(){
+  if(_t==="dash")rDash();
+  else if(_t==="termos")rTermos();
+  else if(_t==="animais")rAnimais();
+  else if(_t==="previsoes")rPrev();
+  else if(_t==="abates")rAbates();
+  else if(_t==="mortes")rMortes();
+  else if(_t==="fin")rFin();
+}
+
+// ── CARREGAR DO CERES 2026 ──
+// Manejo ceres: A=Qtd, B=NF, C=GTA, D=Termo(GTA), E=Sisbov, F=Identificador, G=NCF, H=CodAlt, I=Peso, J=Raca, K=Baias, L=OBS, M=DataEntrada, N=vazio, O=TERMO SAIDA, P=DATA EMBARQUE
+function carregarManejo(silent){
+  if(!silent)load("Carregando MANEJO...");
+  return sheets("Manejo ceres","A:P").then(function(rows){
+    if(!silent)load(false);
+    if(rows.length<2)return;
+    animais=rows.slice(1).filter(function(r){return r[4];}).map(function(r){
+      return {
+        qtd:r[0]||"", nf:String(r[1]||"").trim(), gta:String(r[2]||"").trim(),
+        sisbov:String(r[4]||"").trim(), identificador:String(r[5]||"").trim(),
+        ncfCeres:String(r[6]||"").trim(), peso:parseFloat(r[8])||0,
+        raca:r[9]||"", baia:String(r[10]||"").trim(),
+        dataEntrada:parseData(r[12]),
+        // col O (idx 14) = TERMO SAIDA ex: JF052026
+        termoSaida:String(r[14]||"").trim(),
+        // col P (idx 15) = DATA EMBARQUE
+        dataEmbarque:parseData(r[15])
+      };
+    });
+    lsSave();
+    if(!silent)rAnimais();
+  }).catch(function(){if(!silent){load(false);alert("Erro ao carregar MANEJO.");}});
+}
+
+// TERMOSEMBARQUES: A=GTA, B=TERMO(JF052026), C=QNTD, D=DataEmbarque, E=AnimaisEmbarcados, F=Baias, G=Sobras, H=BaiasQtd, I=Frigorifico
+function carregarEmbarques(silent){
+  if(!silent)load("Carregando embarques...");
+  return sheets("TERMOSEMBARQUES","A:I").then(function(rows){
+    if(!silent)load(false);
+    if(rows.length<2)return;
+    rows.slice(1).forEach(function(r){
+      if(!r[1])return;
+      var codS=String(r[1]||"").trim();
+      var cod=normalTermo(codS);
+      var dataEmb=parseData(r[3]);
+      var qtd=parseInt(r[2])||0;
+      var frig=String(r[8]||"").trim();
+      var chave=codS+"_"+dataEmb+"_"+qtd+"_"+frig;
+      if(abates.find(function(a){return a.chave===chave;}))return;
+      abates.push({
+        id:"emb_"+Date.now()+"_"+Math.random().toString(36).slice(2),
+        chave:chave, termo:cod, termoSaida:codS,
+        dataAbate:dataEmb, frigorifico:frig,
+        baias:String(r[5]||"").trim(), qtd:qtd,
+        qtdEmbarcada:parseInt(r[4])||0, sobras:parseInt(r[6])||0,
+        gta:String(r[0]||"").trim(), origem:"CERES2026"
+      });
+    });
+    lsSave();
+    if(!silent)rAbates();
+  }).catch(function(){if(!silent){load(false);alert("Erro ao carregar embarques.");}});
+}
+
+// MORTES: linha1=vazio, linha2=header, linha3+=dados
+// cols (lendo B:O): 0=N°,1=NF,2=IDAnimal,3=BrincoCeres,4=Fornecedor,5=Origem,6=Baia,7=Setor,8=Lote,9=DataMorte,10=DataEntrada,11=DiasCocho,12=Faixa,13=Medicacoes
+function carregarMortes(silent){
+  if(!silent)load("Carregando mortes...");
+  return sheets("MORTES","B:O").then(function(rows){
+    if(!silent)load(false);
+    if(rows.length<3)return;
+    rows.slice(2).forEach(function(r){
+      if(!r[0])return;
+      var nf=String(r[1]||"").trim();
+      var baia=String(r[6]||"").trim();
+      var dataMorte=parseData(r[9]);
+      var chave="morte_"+nf+"_"+baia+"_"+dataMorte;
+      if(mortes.find(function(m){return m.chave===chave;}))return;
+      // tentar vincular ao Termo pelo animal no MANEJO
+      var termoSaida="";
+      var an=animais.find(function(a){return a.nf===nf&&(!baia||a.baia===baia);});
+      if(an)termoSaida=an.termoSaida||"";
+      mortes.push({
+        id:"m_"+Date.now()+"_"+Math.random().toString(36).slice(2),
+        chave:chave, nf:nf, baia:baia,
+        idAnimal:String(r[2]||"").trim(),
+        ncfCeres:String(r[3]||"").trim(),
+        lote:String(r[8]||"").trim(),
+        data:dataMorte, dataEntrada:parseData(r[10]),
+        causa:"CERES 2026", obs:String(r[12]||"").trim(),
+        termoSaida:termoSaida, origem:"CERES2026"
+      });
+    });
+    lsSave();
+    if(!silent)rMortes();
+  }).catch(function(){if(!silent){load(false);alert("Erro ao carregar mortes.");}});
+}
+
+// ── DASHBOARD ──
+function rDash(){
+  var tQ=termos.reduce(function(s,t){return s+(+t.qtd||0);},0);
+  var tV=termos.reduce(function(s,t){return s+(+t.valorLiquido||0);},0);
+  var tJ=termos.reduce(function(s,t){return s+juros(+t.valorLiquido||0,t.dataEmissao);},0);
+  var nEmb=animais.filter(function(a){return a.dataEmbarque;}).length;
+  document.getElementById("d-met").innerHTML=
+    mc("Termos",termos.length,"","verde")+
+    mc("Animais",fN(tQ),"total","verde")+
+    mc("Custo aquisicao",fR(tV),"","")+
+    mc("Juros hoje",fR(tJ),"acumulado","ouro")+
+    mc("Custo total hoje",fR(tV+tJ),"","")+
+    mc("Embarcados",fN(nEmb),"col P MANEJO","")+
+    mc("Mortes",mortes.length,"registradas","red");
+  var fl=termos.filter(function(t){return stT(t)!=="encerrado";});
+  if(!fl.length){document.getElementById("d-tab").innerHTML='<div class="vazio">Nenhum Termo. Va em Termos e clique em Importar 22 Termos.</div>';return;}
+  var h='<table><thead><tr><th>Termo</th><th>Emissao</th><th>Vencimento</th><th>Animais</th><th>Vlr Liquido</th><th>Dias</th><th>Juros</th><th>Embarcados</th><th>Mortes</th><th>Status</th></tr></thead><tbody>';
+  fl.forEach(function(t){
+    var d=dias(t.dataEmissao); var j=juros(+t.valorLiquido||0,t.dataEmissao); var st=stT(t);
+    var codS=semSufixo(t.codigo);
+    var emb=animais.filter(function(a){return (a.termoSaida===codS||a.termoSaida===t.codigo)&&a.dataEmbarque;}).length;
+    var mort=mortes.filter(function(m){return m.termoSaida===codS||m.termoSaida===t.codigo;}).length;
+    h+='<tr><td><b>'+t.codigo+'</b></td><td>'+fD(t.dataEmissao)+'</td><td>'+fD(t.vencimento)+'</td>';
+    h+='<td>'+fN(t.qtd)+'</td><td>'+fR(t.valorLiquido)+'</td>';
+    h+='<td><span class="bg '+(d>120?'bg-p':d>90?'bg-o':'bg-v')+'">'+d+'d</span></td>';
+    h+='<td style="color:var(--o)">'+fR(j)+'</td>';
+    h+='<td>'+(emb?'<span class="bg bg-a">'+emb+'</span>':'&#8212;')+'</td>';
+    h+='<td>'+(mort?'<span class="bg bg-p">'+mort+'</span>':'&#8212;')+'</td>';
+    h+='<td><span class="bg '+bgSt(st)+'">'+txSt(st)+'</span></td></tr>';
+  });
+  document.getElementById("d-tab").innerHTML=h+'</tbody></table>';
+}
+
+// ── TERMOS ──
+function importarTermos(){
+  var dados = [{"codigo": "JF012026-1", "dataEmissao": "2026-05-20", "vencimento": "2026-10-17", "qtd": 148, "valorCabeca": 4593.98, "valorLiquido": 679909.22, "valorNominal": 753362.02, "custeio": 1.95, "id": "termo_JF012026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF022026-1", "dataEmissao": "2026-05-21", "vencimento": "2026-10-18", "qtd": 1006, "valorCabeca": 4513.73, "valorLiquido": 4540813.54, "valorNominal": 5031372.34, "custeio": 1.95, "id": "termo_JF022026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF032026-1", "dataEmissao": "2026-05-22", "vencimento": "2026-10-19", "qtd": 138, "valorCabeca": 4434.55, "valorLiquido": 611967.4, "valorNominal": 674007.05, "custeio": 1.95, "id": "termo_JF032026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF042026-1", "dataEmissao": "2026-05-25", "vencimento": "2026-10-22", "qtd": 308, "valorCabeca": 5000.0, "valorLiquido": 1540000.0, "valorNominal": 1696121.16, "custeio": 1.95, "id": "termo_JF042026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF052026-1", "dataEmissao": "2026-05-26", "vencimento": "2026-10-23", "qtd": 1502, "valorCabeca": 4078.61, "valorLiquido": 6126069.74, "valorNominal": 6747114.61, "custeio": 1.95, "id": "termo_JF052026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF062026-1", "dataEmissao": "2026-05-26", "vencimento": "2026-10-23", "qtd": 540, "valorCabeca": 4765.33, "valorLiquido": 2573276.04, "valorNominal": 2834148.01, "custeio": 1.95, "id": "termo_JF062026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF072026-1", "dataEmissao": "2026-05-27", "vencimento": "2026-10-24", "qtd": 286, "valorCabeca": 4963.36, "valorLiquido": 1419519.71, "valorNominal": 1563426.89, "custeio": 1.95, "id": "termo_JF072026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF082026-1", "dataEmissao": "2026-06-03", "vencimento": "2026-10-31", "qtd": 70, "valorCabeca": 4825.33, "valorLiquido": 337773.31, "valorNominal": 372015.88, "custeio": 1.95, "id": "termo_JF082026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF092026-1", "dataEmissao": "2026-06-30", "vencimento": "2026-11-27", "qtd": 1269, "valorCabeca": 5086.82, "valorLiquido": 6455176.7, "valorNominal": 7109585.57, "custeio": 1.95, "id": "termo_JF092026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF102026-1", "dataEmissao": "2026-07-01", "vencimento": "2026-11-28", "qtd": 540, "valorCabeca": 5067.96, "valorLiquido": 2736699.76, "valorNominal": 3014139.2, "custeio": 1.95, "id": "termo_JF102026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF112026-1", "dataEmissao": "2026-07-06", "vencimento": "2026-12-03", "qtd": 861, "valorCabeca": 5409.43, "valorLiquido": 4657520.7, "valorNominal": 5129687.92, "custeio": 1.95, "id": "termo_JF112026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF122026-1", "dataEmissao": "2026-07-07", "vencimento": "2026-12-04", "qtd": 906, "valorCabeca": 4299.59, "valorLiquido": 3895427.08, "valorNominal": 4290335.25, "custeio": 1.95, "id": "termo_JF122026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF132026-1", "dataEmissao": "2026-07-09", "vencimento": "", "qtd": 0, "valorCabeca": 0, "valorLiquido": 0, "valorNominal": 0, "custeio": 1.95, "id": "termo_JF132026-1", "taxaDia": 0.00065, "obs": "⚠️ Completar: vencimento, qtd e valores (PDF sem dados extraíveis)", "baias": [], "nfs": []}, {"codigo": "JF142026-1", "dataEmissao": "2026-07-10", "vencimento": "2026-12-07", "qtd": 447, "valorCabeca": 4730.66, "valorLiquido": 2114604.84, "valorNominal": 2328977.93, "custeio": 1.95, "id": "termo_JF142026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF152026-1", "dataEmissao": "2026-07-13", "vencimento": "2026-12-10", "qtd": 565, "valorCabeca": 5024.22, "valorLiquido": 2838682.39, "valorNominal": 3126460.56, "custeio": 1.95, "id": "termo_JF152026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF162026-1", "dataEmissao": "2026-07-14", "vencimento": "2026-12-11", "qtd": 225, "valorCabeca": 5237.5, "valorLiquido": 1178438.5, "valorNominal": 1297905.5, "custeio": 1.95, "id": "termo_JF162026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF172026-1", "dataEmissao": "2026-07-15", "vencimento": "2026-12-12", "qtd": 136, "valorCabeca": 5142.12, "valorLiquido": 699328.06, "valorNominal": 770224.1, "custeio": 1.95, "id": "termo_JF172026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF182026-1", "dataEmissao": "2026-07-17", "vencimento": "2026-12-14", "qtd": 303, "valorCabeca": 5128.13, "valorLiquido": 1553823.66, "valorNominal": 1711346.22, "custeio": 1.95, "id": "termo_JF182026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF192026-1", "dataEmissao": "2026-07-23", "vencimento": "2026-12-20", "qtd": 427, "valorCabeca": 5200.42, "valorLiquido": 2220578.48, "valorNominal": 2445694.9, "custeio": 1.95, "id": "termo_JF192026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF202026-1", "dataEmissao": "2026-08-04", "vencimento": "2026-12-01", "qtd": 302, "valorCabeca": 4938.1, "valorLiquido": 1491306.54, "valorNominal": 1610038.53, "custeio": 1.95, "id": "termo_JF202026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF212026-1", "dataEmissao": "2026-08-07", "vencimento": "2027-01-04", "qtd": 214, "valorCabeca": 5253.63, "valorLiquido": 1124277.26, "valorNominal": 1238253.54, "custeio": 1.95, "id": "termo_JF212026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}, {"codigo": "JF222026-1", "dataEmissao": "2026-08-12", "vencimento": "2027-01-09", "qtd": 469, "valorCabeca": 5244.71, "valorLiquido": 2459770.12, "valorNominal": 2709135.16, "custeio": 1.95, "id": "termo_JF222026-1", "taxaDia": 0.00065, "obs": "", "baias": [], "nfs": []}];
+  var n=0;
+  dados.forEach(function(t){
+    if(!termos.find(function(x){return x.codigo===t.codigo;})){termos.push(t);n++;}
+  });
+  lsSave();
+  apiPost({acao:"salvar",tabela:"TERMOS",dados:termos});
+  rTermos();
+  alert(n+" termos importados!\nJF132026-1 precisa ser completado manualmente.");
+}
+
+function rTermos(){
+  var fc=(document.getElementById("ft-c").value||"").toLowerCase();
+  var fs=document.getElementById("ft-s").value||"";
+  var fl=termos.filter(function(t){
+    if(fc&&!t.codigo.toLowerCase().includes(fc))return false;
+    if(fs&&stT(t)!==fs)return false;
+    return true;
+  });
+  if(!fl.length){document.getElementById("t-tab").innerHTML='<div class="vazio">Nenhum Termo. Clique em Importar 22 Termos.</div>';return;}
+  var h='<table><thead><tr><th>Codigo</th><th>Emissao</th><th>Vencimento</th><th>Animais</th><th>Vlr/Cb</th><th>Vlr Liquido</th><th>Dias</th><th>Juros</th><th>Custo Total</th><th>Embarcados</th><th>Mortes</th><th>Status</th><th></th></tr></thead><tbody>';
+  fl.forEach(function(t){
+    var d=dias(t.dataEmissao); var j=juros(+t.valorLiquido||0,t.dataEmissao); var st=stT(t); var idx=termos.indexOf(t);
+    var codS=semSufixo(t.codigo);
+    var emb=animais.filter(function(a){return(a.termoSaida===codS||a.termoSaida===t.codigo)&&a.dataEmbarque;}).length;
+    var mort=mortes.filter(function(m){return m.termoSaida===codS||m.termoSaida===t.codigo;}).length;
+    h+='<tr><td><b>'+t.codigo+'</b></td><td>'+fD(t.dataEmissao)+'</td><td>'+fD(t.vencimento)+'</td>';
+    h+='<td>'+fN(t.qtd)+'</td><td>'+fR(t.valorCabeca)+'</td><td>'+fR(t.valorLiquido)+'</td>';
+    h+='<td><span class="bg '+(d>120?'bg-p':d>90?'bg-o':'bg-v')+'">'+d+'d</span></td>';
+    h+='<td style="color:var(--o)">'+fR(j)+'</td><td style="font-weight:600">'+fR((+t.valorLiquido||0)+j)+'</td>';
+    h+='<td>'+(emb?'<span class="bg bg-a">'+emb+'</span>':'&#8212;')+'</td>';
+    h+='<td>'+(mort?'<span class="bg bg-p">'+mort+'</span>':'&#8212;')+'</td>';
+    h+='<td><span class="bg '+bgSt(st)+'">'+txSt(st)+'</span></td>';
+    h+='<td><button class="bic" onclick="editT('+idx+')" title="Editar">&#9998;</button> <button class="bic" onclick="delT('+idx+')" title="Excluir">&#128465;</button></td></tr>';
+  });
+  document.getElementById("t-tab").innerHTML=h+'</tbody></table>';
+}
+
+function novoTermo(){
+  var c='<div class="fg"><div class="fi"><label>Codigo</label><input id="nt-c" placeholder="JF232026-1"></div><div class="fi"><label>Data Emissao</label><input type="date" id="nt-e"></div><div class="fi"><label>Vencimento</label><input type="date" id="nt-v"></div><div class="fi"><label>Qtd Animais</label><input type="number" id="nt-q"></div><div class="fi"><label>Valor Cabeca</label><input type="number" id="nt-vc" step="0.01"></div><div class="fi"><label>Valor Liquido</label><input type="number" id="nt-vl" step="0.01"></div><div class="fi"><label>Valor Nominal</label><input type="number" id="nt-vn" step="0.01"></div><div class="fi"><label>Custeio %/mes</label><input type="number" id="nt-cu" value="1.95" step="0.01"></div></div>';
+  aModal("Novo Termo",c,'<button class="btn btn-g" onclick="fModal()">Cancelar</button><button class="btn btn-v" onclick="svNovoT()">Salvar</button>');
+}
+function svNovoT(){
+  var cod=(document.getElementById("nt-c").value||"").trim();
+  if(!cod){alert("Informe o codigo.");return;}
+  if(termos.find(function(t){return t.codigo===cod;})){alert("Termo ja existe.");return;}
+  var cu=parseFloat(document.getElementById("nt-cu").value)||1.95;
+  termos.push({id:"t_"+Date.now(),codigo:cod,dataEmissao:document.getElementById("nt-e").value,vencimento:document.getElementById("nt-v").value,qtd:parseInt(document.getElementById("nt-q").value)||0,valorCabeca:parseFloat(document.getElementById("nt-vc").value)||0,valorLiquido:parseFloat(document.getElementById("nt-vl").value)||0,valorNominal:parseFloat(document.getElementById("nt-vn").value)||0,custeio:cu,taxaDia:cu/30/100,obs:"",baias:[],nfs:[]});
+  lsSave(); apiPost({acao:"salvarUm",tabela:"TERMOS",registro:termos[termos.length-1]}); fModal(); rTermos();
+}
+function editT(i){
+  var t=termos[i];
+  var c='<div class="fg"><div class="fi"><label>Codigo</label><input value="'+t.codigo+'" readonly></div><div class="fi"><label>Data Emissao</label><input type="date" id="et-e" value="'+(t.dataEmissao||"")+'"></div><div class="fi"><label>Vencimento</label><input type="date" id="et-v" value="'+(t.vencimento||"")+'"></div><div class="fi"><label>Qtd</label><input type="number" id="et-q" value="'+(t.qtd||0)+'"></div><div class="fi"><label>Vlr Cabeca</label><input type="number" id="et-vc" value="'+(t.valorCabeca||0)+'" step="0.01"></div><div class="fi"><label>Vlr Liquido</label><input type="number" id="et-vl" value="'+(t.valorLiquido||0)+'" step="0.01"></div><div class="fi"><label>Vlr Nominal</label><input type="number" id="et-vn" value="'+(t.valorNominal||0)+'" step="0.01"></div><div class="fi"><label>Custeio</label><input type="number" id="et-cu" value="'+(t.custeio||1.95)+'" step="0.01"></div></div>';
+  aModal("Editar - "+t.codigo,c,'<button class="btn btn-g" onclick="fModal()">Cancelar</button><button class="btn btn-v" onclick="svEditT('+i+')">Salvar</button>');
+}
+function svEditT(i){
+  var t=termos[i]; var cu=parseFloat(document.getElementById("et-cu").value)||1.95;
+  t.dataEmissao=document.getElementById("et-e").value; t.vencimento=document.getElementById("et-v").value;
+  t.qtd=parseInt(document.getElementById("et-q").value)||0; t.valorCabeca=parseFloat(document.getElementById("et-vc").value)||0;
+  t.valorLiquido=parseFloat(document.getElementById("et-vl").value)||0; t.valorNominal=parseFloat(document.getElementById("et-vn").value)||0;
+  t.custeio=cu; t.taxaDia=cu/30/100;
+  lsSave(); apiPost({acao:"salvarUm",tabela:"TERMOS",registro:t}); fModal(); rTermos();
+}
+function delT(i){if(!confirm("Excluir "+termos[i].codigo+"?"))return;termos.splice(i,1);lsSave();apiPost({acao:"salvar",tabela:"TERMOS",dados:termos});rTermos();}
+
+// ── ANIMAIS ──
+function rAnimais(){
+  var fts=(document.getElementById("fa-ts").value||"").toLowerCase();
+  var fb=(document.getElementById("fa-b").value||"").toLowerCase();
+  var fn=(document.getElementById("fa-n").value||"").trim();
+  var femb=document.getElementById("fa-emb").value||"";
+  var fl=animais.filter(function(a){
+    if(fts&&!(a.termoSaida||"").toLowerCase().includes(fts))return false;
+    if(fb&&!(a.baia||"").toLowerCase().includes(fb))return false;
+    if(fn&&String(a.nf||"").trim()!==fn)return false;
+    if(femb==="sim"&&!a.dataEmbarque)return false;
+    if(femb==="nao"&&a.dataEmbarque)return false;
+    return true;
+  }).slice(0,400);
+  if(!fl.length){document.getElementById("a-tab").innerHTML='<div class="vazio">Nenhum animal. Clique em Carregar do MANEJO.</div>';return;}
+  var h='<table><thead><tr><th>#</th><th>NF</th><th>Baia</th><th>Sisbov</th><th>Identificador</th><th>NCF</th><th>Peso(kg)</th><th>Raca</th><th>Entrada</th><th>Termo Saida (col O)</th><th>Dt Embarque (col P)</th></tr></thead><tbody>';
+  fl.forEach(function(a){
+    var emb=a.dataEmbarque?'<span class="bg bg-a">'+fD(a.dataEmbarque)+'</span>':'&#8212;';
+    var ts=a.termoSaida?'<span class="bg bg-v">'+a.termoSaida+'</span>':'&#8212;';
+    h+='<tr><td>'+a.qtd+'</td><td><b>'+a.nf+'</b></td><td><span class="bg bg-c">'+a.baia+'</span></td>';
+    h+='<td style="font-size:11px;font-family:monospace">'+a.sisbov+'</td>';
+    h+='<td style="font-size:11px;font-family:monospace">'+a.identificador+'</td>';
+    h+='<td style="font-size:11px;font-family:monospace">'+a.ncfCeres+'</td>';
+    h+='<td>'+fN(a.peso)+'</td><td>'+a.raca+'</td><td>'+fD(a.dataEntrada)+'</td>';
+    h+='<td>'+ts+'</td><td>'+emb+'</td></tr>';
+  });
+  document.getElementById("a-tab").innerHTML=h+'</tbody></table>';
+  if(animais.length>400)document.getElementById("a-tab").innerHTML+='<div style="padding:6px 12px;font-size:11px;color:var(--t3)">Exibindo 400 de '+animais.length+'. Use filtros.</div>';
+}
+
+// ── PREVISOES ──
+function rPrev(){
+  var ft=(document.getElementById("fp-t").value||"").toLowerCase();
+  var fs=document.getElementById("fp-s").value||"";
+  var fl=termos.filter(function(t){var st=stT(t);if(st==="encerrado")return false;if(ft&&!t.codigo.toLowerCase().includes(ft))return false;if(fs&&st!==fs)return false;return true;});
+  var tQ=0,tV=0,tJH=0,tJV=0;
+  fl.forEach(function(t){var vl=+t.valorLiquido||0;tQ+=+t.qtd||0;tV+=vl;tJH+=juros(vl,t.dataEmissao);tJV+=juros(vl,t.dataEmissao,t.vencimento>hj()?t.vencimento:hj());});
+  document.getElementById("p-met").innerHTML=mc("Animais",fN(tQ),"","verde")+mc("Custo aquisicao",fR(tV),"","")+mc("Juros hoje",fR(tJH),"","ouro")+mc("Juros vencimento",fR(tJV),"","ouro")+mc("Custo total hoje",fR(tV+tJH),"","");
+  if(!fl.length){document.getElementById("p-tab").innerHTML='<div class="vazio">Nenhum Termo ativo.</div>';return;}
+  var h='<table><thead><tr><th>Termo</th><th>Animais</th><th>Emissao</th><th>Vencimento</th><th>Dias</th><th>Dias p/venc</th><th>Vlr Liquido</th><th>Juros hoje</th><th>Custo hoje</th><th>Custo/Cb</th><th>Juros venc</th><th>Custo venc</th><th>Status</th></tr></thead><tbody>';
+  fl.forEach(function(t){
+    var vl=+t.valorLiquido||0; var d=dias(t.dataEmissao); var dv=Math.max(0,dias(hj(),t.vencimento));
+    var jH=juros(vl,t.dataEmissao); var jV=juros(vl,t.dataEmissao,t.vencimento>hj()?t.vencimento:hj());
+    var cb=(+t.qtd||1)>0?(vl+jH)/(+t.qtd):0; var st=stT(t);
+    h+='<tr><td><b>'+t.codigo+'</b></td><td>'+fN(t.qtd)+'</td><td>'+fD(t.dataEmissao)+'</td><td>'+fD(t.vencimento)+'</td>';
+    h+='<td><span class="bg '+(d>120?'bg-p':d>90?'bg-o':'bg-v')+'">'+d+'d</span></td>';
+    h+='<td>'+(dv>0?dv+'d':'<span class="bg bg-p">Vencido</span>')+'</td>';
+    h+='<td>'+fR(vl)+'</td><td style="color:var(--o)">'+fR(jH)+'</td><td style="font-weight:600">'+fR(vl+jH)+'</td>';
+    h+='<td>'+fR(cb)+'</td><td>'+fR(jV)+'</td><td>'+fR(vl+jV)+'</td>';
+    h+='<td><span class="bg '+bgSt(st)+'">'+txSt(st)+'</span></td></tr>';
+  });
+  document.getElementById("p-tab").innerHTML=h+'</tbody></table>';
+}
+
+// ── ABATES ──
+function rAbates(){
+  var ft=(document.getElementById("fab-t").value||"").toLowerCase();
+  var ff=(document.getElementById("fab-f").value||"").toLowerCase();
+  var fd=document.getElementById("fab-d").value||"";
+  var fa=document.getElementById("fab-a").value||"";
+  var fl=abates.filter(function(a){
+    if(ft&&!(a.termoSaida||a.termo||"").toLowerCase().includes(ft))return false;
+    if(ff&&!(a.frigorifico||"").toLowerCase().includes(ff))return false;
+    if(fd&&a.dataAbate<fd)return false;
+    if(fa&&a.dataAbate>fa)return false;
+    return true;
+  });
+  if(!fl.length){document.getElementById("ab-tab").innerHTML='<div class="vazio">Nenhum embarque. Clique em Carregar do CERES 2026.</div>';return;}
+  var h='<table><thead><tr><th>Data</th><th>Termo</th><th>Frigorifico</th><th>Baias</th><th>Qtd Prev</th><th>Qtd Embarcada</th><th>Sobras</th><th>GTA</th><th>Dias</th><th>Custo Aq.</th><th>Juros</th><th>Custo Total</th></tr></thead><tbody>';
+  fl.sort(function(a,b){return(b.dataAbate||"").localeCompare(a.dataAbate||"");}).forEach(function(a){
+    var cod=normalTermo(a.termoSaida||a.termo||"");
+    var t=termos.find(function(x){return x.codigo===cod;});
+    var vl=t?+t.valorLiquido||0:0;
+    var qt=a.qtdEmbarcada||a.qtd||0;
+    var ca=t&&t.qtd>0?vl*(qt/t.qtd):0;
+    var d=t?dias(t.dataEmissao,a.dataAbate):0;
+    var j=juros(ca,t?t.dataEmissao:"",a.dataAbate);
+    h+='<tr><td>'+fD(a.dataAbate)+'</td><td><b>'+(a.termoSaida||a.termo)+'</b></td>';
+    h+='<td>'+(a.frigorifico||'&#8212;')+'</td><td style="font-size:11px">'+a.baias+'</td>';
+    h+='<td>'+fN(a.qtd)+'</td><td>'+fN(a.qtdEmbarcada)+'</td><td>'+(a.sobras||'&#8212;')+'</td>';
+    h+='<td style="font-size:11px">'+(a.gta||'&#8212;')+'</td>';
+    h+='<td>'+d+'d</td><td>'+fR(ca)+'</td><td style="color:var(--o)">'+fR(j)+'</td><td style="font-weight:600">'+fR(ca+j)+'</td></tr>';
+  });
+  document.getElementById("ab-tab").innerHTML=h+'</tbody></table>';
+}
+
+// ── MORTES ──
+function novaMorte(){
+  var ops=termos.map(function(t){return '<option value="'+t.codigo+'">'+t.codigo+'</option>';}).join("");
+  var c='<div class="fg"><div class="fi full"><label>Termo Saida</label><select id="nm-t"><option value="">Selecione...</option>'+ops+'</select></div><div class="fi"><label>Data</label><input type="date" id="nm-d" value="'+hj()+'"></div><div class="fi"><label>Baia</label><input id="nm-b" placeholder="M-5"></div><div class="fi"><label>Causa</label><select id="nm-c"><option>Morte natural</option><option>Trauma</option><option>Doenca</option><option>Asfixia</option><option>Outra</option></select></div><div class="fi full"><label>Obs</label><textarea id="nm-o" rows="2"></textarea></div></div>';
+  c+='<div class="infobox">Os juros correm ate o abate do Termo — a morte e registrada apenas para controle historico.</div>';
+  aModal("Registrar Morte",c,'<button class="btn btn-g" onclick="fModal()">Cancelar</button><button class="btn btn-p" onclick="svMorte()">Registrar</button>');
+}
+function svMorte(){
+  var cod=document.getElementById("nm-t").value; if(!cod){alert("Selecione o Termo.");return;}
+  var m={id:"m_"+Date.now(),termoSaida:semSufixo(cod),baia:document.getElementById("nm-b").value,data:document.getElementById("nm-d").value,causa:document.getElementById("nm-c").value,obs:document.getElementById("nm-o").value||"",origem:"manual"};
+  mortes.push(m); lsSave(); apiPost({acao:"salvarUm",tabela:"MORTES",registro:m}); fModal(); rMortes();
+}
+function rMortes(){
+  var fts=(document.getElementById("fm-ts").value||"").toLowerCase();
+  var fb=(document.getElementById("fm-b").value||"").toLowerCase();
+  var fd=document.getElementById("fm-d").value||"";
+  var fa=document.getElementById("fm-a").value||"";
+  var fl=mortes.filter(function(m){
+    if(fts&&!(m.termoSaida||"").toLowerCase().includes(fts))return false;
+    if(fb&&!(m.baia||"").toLowerCase().includes(fb))return false;
+    if(fd&&m.data<fd)return false;
+    if(fa&&m.data>fa)return false;
+    return true;
+  });
+  if(!fl.length){document.getElementById("m-tab").innerHTML='<div class="vazio">Nenhuma morte. Clique em Carregar do CERES 2026.</div>';return;}
+  var h='<table><thead><tr><th>Data</th><th>Baia</th><th>NF</th><th>ID Animal</th><th>NCF Ceres</th><th>Lote</th><th>Entrada</th><th>Dias</th><th>Termo Saida</th><th>Causa</th><th>Obs</th></tr></thead><tbody>';
+  fl.sort(function(a,b){return(b.data||"").localeCompare(a.data||"");}).forEach(function(m){
+    var d=m.data&&m.dataEntrada?dias(m.dataEntrada,m.data):0;
+    h+='<tr><td>'+fD(m.data)+'</td><td><span class="bg bg-c">'+(m.baia||'&#8212;')+'</span></td>';
+    h+='<td>'+(m.nf||'&#8212;')+'</td><td style="font-size:11px">'+(m.idAnimal||'&#8212;')+'</td>';
+    h+='<td style="font-size:11px">'+(m.ncfCeres||'&#8212;')+'</td><td>'+(m.lote||'&#8212;')+'</td>';
+    h+='<td>'+fD(m.dataEntrada)+'</td><td>'+(d?d+'d':'&#8212;')+'</td>';
+    h+='<td>'+(m.termoSaida?'<span class="bg bg-v">'+m.termoSaida+'</span>':'&#8212;')+'</td>';
+    h+='<td><span class="bg bg-p">'+(m.causa||'&#8212;')+'</span></td>';
+    h+='<td style="font-size:11px;color:var(--t3)">'+(m.obs||'&#8212;')+'</td></tr>';
+  });
+  document.getElementById("m-tab").innerHTML=h+'</tbody></table>';
+}
+
+// ── FINANCEIRO ──
+function rFin(){
+  var totV=termos.reduce(function(s,t){return s+(+t.valorLiquido||0);},0);
+  var totJ=termos.reduce(function(s,t){return s+juros(+t.valorLiquido||0,t.dataEmissao);},0);
+  document.getElementById("f-met").innerHTML=
+    mc("Custo aquisicao total",fR(totV),"","")+
+    mc("Juros acumulados",fR(totJ),"","ouro")+
+    mc("Custo total hoje",fR(totV+totJ),"","verde")+
+    mc("Embarques",fN(abates.length),"","");
+  var h='<table><thead><tr><th>Termo</th><th>Emissao</th><th>Vencimento</th><th>Animais</th><th>Vlr Liquido</th><th>Juros hoje</th><th>Custo hoje</th><th>Embarques</th><th>Mortes</th><th>Status</th></tr></thead><tbody>';
+  termos.forEach(function(t){
+    var vl=+t.valorLiquido||0; var j=juros(vl,t.dataEmissao); var st=stT(t); var codS=semSufixo(t.codigo);
+    var embT=abates.filter(function(a){return a.termoSaida===codS||a.termoSaida===t.codigo||a.termo===t.codigo;});
+    var mortT=mortes.filter(function(m){return m.termoSaida===codS||m.termoSaida===t.codigo;});
+    h+='<tr><td><b>'+t.codigo+'</b></td><td>'+fD(t.dataEmissao)+'</td><td>'+fD(t.vencimento)+'</td><td>'+fN(t.qtd)+'</td>';
+    h+='<td>'+fR(vl)+'</td><td style="color:var(--o)">'+fR(j)+'</td><td style="font-weight:600">'+fR(vl+j)+'</td>';
+    h+='<td>'+(embT.length?'<span class="bg bg-a">'+embT.length+'</span>':'&#8212;')+'</td>';
+    h+='<td>'+(mortT.length?'<span class="bg bg-p">'+mortT.length+'</span>':'&#8212;')+'</td>';
+    h+='<td><span class="bg '+bgSt(st)+'">'+txSt(st)+'</span></td></tr>';
+  });
+  document.getElementById("f-tab").innerHTML=h+'</tbody></table>';
+}
+
+// ── EXPORTAR ──
+function dl(txt,nome){var b=new Blob([txt],{type:"text/csv"});var a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=nome+"_"+hj()+".csv";a.click();}
+function expTermos(){dl(["Codigo;Emissao;Vencimento;Qtd;Vlr Cb;Vlr Liquido;Dias;Juros;Custo;Status"].concat(termos.map(function(t){var j=juros(+t.valorLiquido||0,t.dataEmissao);return[t.codigo,fD(t.dataEmissao),fD(t.vencimento),t.qtd,t.valorCabeca,(+t.valorLiquido||0).toFixed(2),dias(t.dataEmissao),j.toFixed(2),((+t.valorLiquido||0)+j).toFixed(2),stT(t)].join(";");})).join(String.fromCharCode(13,10)),"Termos_CERES");}
+function expPrev(){dl(["Termo;Qtd;Emissao;Vencimento;Dias;Vlr Liq;Juros Hoje;Custo Hoje;Juros Venc;Custo Venc"].concat(termos.filter(function(t){return stT(t)!=="encerrado";}).map(function(t){var vl=+t.valorLiquido||0;var jH=juros(vl,t.dataEmissao);var jV=juros(vl,t.dataEmissao,t.vencimento>hj()?t.vencimento:hj());return[t.codigo,t.qtd,fD(t.dataEmissao),fD(t.vencimento),dias(t.dataEmissao),vl.toFixed(2),jH.toFixed(2),(vl+jH).toFixed(2),jV.toFixed(2),(vl+jV).toFixed(2)].join(";");})).join(String.fromCharCode(13,10)),"Previsoes_CERES");}
+function expAbates(){dl(["Data;Termo;Frigorifico;Baias;Qtd Prev;Qtd Emb;Sobras;GTA;Dias;CA;Juros;Custo"].concat(abates.map(function(a){var cod=normalTermo(a.termoSaida||a.termo||"");var t=termos.find(function(x){return x.codigo===cod;});var vl=t?+t.valorLiquido||0:0;var qt=a.qtdEmbarcada||a.qtd||0;var ca=t&&t.qtd?vl*(qt/t.qtd):0;var j=juros(ca,t?t.dataEmissao:"",a.dataAbate);return[fD(a.dataAbate),a.termoSaida||a.termo,a.frigorifico,a.baias,a.qtd,a.qtdEmbarcada,a.sobras,a.gta,t?dias(t.dataEmissao,a.dataAbate):0,ca.toFixed(2),j.toFixed(2),(ca+j).toFixed(2)].join(";");})).join(String.fromCharCode(13,10)),"Abates_CERES");}
+function expMortes(){dl(["Data;Baia;NF;IDAnimal;Lote;Entrada;DiasConfinado;TermoSaida;Causa;Obs"].concat(mortes.map(function(m){var d=m.data&&m.dataEntrada?dias(m.dataEntrada,m.data):0;return[fD(m.data),m.baia,m.nf,m.idAnimal,m.lote,fD(m.dataEntrada),d,m.termoSaida,m.causa,m.obs].join(";");})).join(String.fromCharCode(13,10)),"Mortes_CERES");}
+function expFin(){dl(["Termo;Emissao;Vencimento;Qtd;CA;Juros;Custo;Embarques;Mortes;Status"].concat(termos.map(function(t){var vl=+t.valorLiquido||0;var j=juros(vl,t.dataEmissao);var codS=semSufixo(t.codigo);var emb=abates.filter(function(a){return a.termoSaida===codS||a.termoSaida===t.codigo;});var mort=mortes.filter(function(m){return m.termoSaida===codS||m.termoSaida===t.codigo;});return[t.codigo,fD(t.dataEmissao),fD(t.vencimento),t.qtd,vl.toFixed(2),j.toFixed(2),(vl+j).toFixed(2),emb.length,mort.length,stT(t)].join(";");})).join(String.fromCharCode(13,10)),"Financeiro_CERES");}
+</script>
+</body>
+</html>
